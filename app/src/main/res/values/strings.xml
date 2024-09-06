@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">Snap Sphere</string>
+    <string name="username">Username</string>
+    <string name="username_placeholder">xyz</string>
+    <string name="email">Email</string>
+    <string name="email_placeholder">xyz@example.com</string>
+    <string name="password">Password</string>
+    <string name="welcome">Welcome!</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="confirm_password_supporting_text">The passwords you entered don\'t match</string>
+    <string name="login">Login</string>
+    <string name="have_an_account">Have an account?</string>
 </resources>
