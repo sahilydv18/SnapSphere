@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.snapsphere.main.NotificationToastMessage
 import com.example.snapsphere.ui.SnapSphereApp
 import com.example.snapsphere.ui.theme.SnapSphereTheme
 import com.example.snapsphere.viewmodel.IgViewModel
@@ -22,6 +23,8 @@ class MainActivity : ComponentActivity() {
         setContent {
 
             val igViewModel: IgViewModel = hiltViewModel()
+
+            NotificationToastMessage(igViewModel = igViewModel)
 
             SnapSphereTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->

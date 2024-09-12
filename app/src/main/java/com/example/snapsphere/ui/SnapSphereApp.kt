@@ -15,7 +15,6 @@ fun SnapSphereApp(
     igViewModel: IgViewModel
 ) {
     val navController = rememberNavController()
-
     NavHost(navController = navController, startDestination = Screens.SignUpScreen.route) {
         composable(Screens.SignUpScreen.route) {
             SignUpScreen(

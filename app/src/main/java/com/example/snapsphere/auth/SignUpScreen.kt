@@ -8,10 +8,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -32,7 +35,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
@@ -83,7 +88,7 @@ fun SignUpScreen(
         }
 
         LaunchedEffect(password, confirmPassword) {
-            if(password.isNotBlank() && confirmPassword.isNotBlank()) {
+            if (password.isNotBlank() && confirmPassword.isNotBlank()) {
                 error = password != confirmPassword
             }
         }
@@ -133,7 +138,11 @@ fun SignUpScreen(
                 Text(text = stringResource(id = R.string.username_placeholder))
             },
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(10.dp)
+            shape = RoundedCornerShape(10.dp),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Next
+            )
         )
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -150,7 +159,11 @@ fun SignUpScreen(
                 Text(text = stringResource(id = R.string.email_placeholder))
             },
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(10.dp)
+            shape = RoundedCornerShape(10.dp),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Done
+            )
         )
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -166,14 +179,18 @@ fun SignUpScreen(
             trailingIcon = {
                 IconButton(onClick = { showPassword = !showPassword }) {
                     Icon(
-                        painter = painterResource(id = if(showPassword) R.drawable.baseline_visibility_24 else R.drawable.baseline_visibility_off_24),
+                        painter = painterResource(id = if (showPassword) R.drawable.baseline_visibility_24 else R.drawable.baseline_visibility_off_24),
                         contentDescription = null
                     )
                 }
             },
-            visualTransformation = if(showPassword) VisualTransformation.None else PasswordVisualTransformation(),
+            visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(10.dp)
+            shape = RoundedCornerShape(10.dp),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Done
+            )
         )
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -189,29 +206,46 @@ fun SignUpScreen(
             trailingIcon = {
                 IconButton(onClick = { showConfirmPassword = !showConfirmPassword }) {
                     Icon(
-                        painter = painterResource(id = if(showConfirmPassword) R.drawable.baseline_visibility_24 else R.drawable.baseline_visibility_off_24),
+                        painter = painterResource(id = if (showConfirmPassword) R.drawable.baseline_visibility_24 else R.drawable.baseline_visibility_off_24),
                         contentDescription = null
                     )
                 }
             },
-            visualTransformation = if(showConfirmPassword) VisualTransformation.None else PasswordVisualTransformation(),
+            visualTransformation = if (showConfirmPassword) VisualTransformation.None else PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(10.dp),
             isError = password != confirmPassword && confirmPassword.isNotBlank(),
             supportingText = {
-                if(error) {
+                if (error) {
                     Text(text = stringResource(id = R.string.confirm_password_supporting_text))
                 }
-            }
+            },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Done
+            )
         )
         Spacer(modifier = Modifier.height(32.dp))
 
         // sign up button
         Button(
-            onClick = { /*TODO*/ },
+            onClick = {
+                igViewModel.onSignUp(
+                    username = username,
+                    email = email,
+                    password = confirmPassword
+                )
+            },
             enabled = username.isNotBlank() && email.isNotBlank() && password.isNotBlank() && password == confirmPassword
         ) {
-            Text(text = stringResource(id = R.string.sign_up))
+            if (igViewModel.inProgress.value) {
+                CircularProgressIndicator(
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.size(28.dp)
+                )
+            } else {
+                Text(text = stringResource(id = R.string.sign_up))
+            }
         }
 
         Spacer(modifier = Modifier.weight(1f))
@@ -225,7 +259,10 @@ fun SignUpScreen(
                 modifier = Modifier.align(Alignment.CenterVertically)
             )
             TextButton(onClick = { /*TODO*/ }) {
-                Text(text = stringResource(id = R.string.login))
+                Text(
+                    text = stringResource(id = R.string.login),
+                    fontStyle = FontStyle.Italic
+                )
             }
         }
     }
