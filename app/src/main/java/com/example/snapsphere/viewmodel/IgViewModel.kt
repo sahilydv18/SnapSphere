@@ -77,6 +77,30 @@ class IgViewModel @Inject constructor(
             }
     }
 
+    // function to login the user
+    fun onLogin(email: String, password: String) {
+        _inProgress.value = true
+
+        auth.signInWithEmailAndPassword(email, password)
+            .addOnCompleteListener {    task ->
+                if(task.isSuccessful) {
+                    _signedIn.value = true
+                    auth.currentUser?.uid?.let {
+                        getUserData(it)
+                    }
+                    handleException(customMessage = "Login Successful")
+                    _inProgress.value = false
+                } else {
+                    handleException(task.exception, "Login failed")
+                    _inProgress.value = false
+                }
+            }
+            .addOnFailureListener {
+                handleException(it, "Login failed")
+                _inProgress.value = false
+            }
+    }
+
     // function to create or update user profile in firebase database (firestore)
     private fun createOrUpdateProfile(
         name: String? = null,
