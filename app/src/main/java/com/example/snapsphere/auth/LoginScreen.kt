@@ -8,13 +8,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -22,7 +20,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -44,13 +41,25 @@ import androidx.compose.ui.unit.dp
 import com.example.snapsphere.R
 import com.example.snapsphere.viewmodel.IgViewModel
 
-// sign up screen
 @Composable
-fun SignUpScreen(
-    navigateToLoginScreen: () -> Unit,
+fun LoginScreen(
+    navigateToSignUpScreen: () -> Unit,
     modifier: Modifier,
     igViewModel: IgViewModel
 ) {
+
+    var email by rememberSaveable {
+        mutableStateOf("")
+    }
+
+    var password by rememberSaveable {
+        mutableStateOf("")
+    }
+
+    var showPassword by rememberSaveable {
+        mutableStateOf(false)
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -58,41 +67,6 @@ fun SignUpScreen(
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
-        var username by rememberSaveable {
-            mutableStateOf("")
-        }
-
-        var email by rememberSaveable {
-            mutableStateOf("")
-        }
-
-        var password by rememberSaveable {
-            mutableStateOf("")
-        }
-
-        var showPassword by rememberSaveable {
-            mutableStateOf(false)
-        }
-
-        var confirmPassword by rememberSaveable {
-            mutableStateOf("")
-        }
-
-        var showConfirmPassword by rememberSaveable {
-            mutableStateOf(false)
-        }
-
-        var error by rememberSaveable {
-            mutableStateOf(false)
-        }
-
-        LaunchedEffect(password, confirmPassword) {
-            if (password.isNotBlank() && confirmPassword.isNotBlank()) {
-                error = password != confirmPassword
-            }
-        }
-
         // app name and image
         Row(
             modifier = Modifier.padding(top = 16.dp)
@@ -119,30 +93,9 @@ fun SignUpScreen(
 
         // welcome text
         Text(
-            text = stringResource(id = R.string.welcome),
+            text = stringResource(id = R.string.welcome_back),
             fontWeight = FontWeight.Bold,
             fontSize = MaterialTheme.typography.headlineSmall.fontSize
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // username text field
-        OutlinedTextField(
-            value = username,
-            onValueChange = {
-                username = it
-            },
-            label = {
-                Text(text = stringResource(id = R.string.username))
-            },
-            placeholder = {
-                Text(text = stringResource(id = R.string.username_placeholder))
-            },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(10.dp),
-            singleLine = true,
-            keyboardOptions = KeyboardOptions.Default.copy(
-                imeAction = ImeAction.Next
-            )
         )
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -162,7 +115,7 @@ fun SignUpScreen(
             shape = RoundedCornerShape(10.dp),
             singleLine = true,
             keyboardOptions = KeyboardOptions.Default.copy(
-                imeAction = ImeAction.Done
+                imeAction = ImeAction.Next
             )
         )
         Spacer(modifier = Modifier.height(16.dp))
@@ -192,75 +145,38 @@ fun SignUpScreen(
                 imeAction = ImeAction.Done
             )
         )
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // password confirm text field
-        OutlinedTextField(
-            value = confirmPassword,
-            onValueChange = {
-                confirmPassword = it
-            },
-            label = {
-                Text(text = stringResource(id = R.string.confirm_password))
-            },
-            trailingIcon = {
-                IconButton(onClick = { showConfirmPassword = !showConfirmPassword }) {
-                    Icon(
-                        painter = painterResource(id = if (showConfirmPassword) R.drawable.baseline_visibility_24 else R.drawable.baseline_visibility_off_24),
-                        contentDescription = null
-                    )
-                }
-            },
-            visualTransformation = if (showConfirmPassword) VisualTransformation.None else PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(10.dp),
-            isError = password != confirmPassword && confirmPassword.isNotBlank(),
-            supportingText = {
-                if (error) {
-                    Text(text = stringResource(id = R.string.confirm_password_supporting_text))
-                }
-            },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions.Default.copy(
-                imeAction = ImeAction.Done
-            )
-        )
         Spacer(modifier = Modifier.height(32.dp))
 
-        // sign up button
+        // login button
         Button(
             onClick = {
-                igViewModel.onSignUp(
-                    username = username,
-                    email = email,
-                    password = confirmPassword
-                )
+
             },
-            enabled = username.isNotBlank() && email.isNotBlank() && password.isNotBlank() && password == confirmPassword
+            enabled = email.isNotBlank() && password.isNotBlank()
         ) {
-            if (igViewModel.inProgress.value) {
-                CircularProgressIndicator(
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.size(28.dp)
-                )
-            } else {
-                Text(text = stringResource(id = R.string.sign_up))
-            }
+//            if (igViewModel.inProgress.value) {
+//                CircularProgressIndicator(
+//                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+//                    modifier = Modifier.size(28.dp)
+//                )
+//            } else {
+                Text(text = stringResource(id = R.string.login))
+            //}
         }
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // go to login screen text button
+        // go to signup screen text button
         Row(
             modifier = Modifier.padding(vertical = 16.dp)
         ) {
             Text(
-                text = stringResource(id = R.string.have_an_account),
+                text = stringResource(id = R.string.dont_have_an_account),
                 modifier = Modifier.align(Alignment.CenterVertically)
             )
-            TextButton(onClick = { navigateToLoginScreen() }) {
+            TextButton(onClick = { navigateToSignUpScreen() }) {
                 Text(
-                    text = stringResource(id = R.string.login),
+                    text = stringResource(id = R.string.sign_up),
                     fontStyle = FontStyle.Italic
                 )
             }

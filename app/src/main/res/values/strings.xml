@@ -11,4 +11,6 @@
     <string name="confirm_password_supporting_text">The passwords you entered don\'t match</string>
     <string name="login">Login</string>
     <string name="have_an_account">Have an account?</string>
+    <string name="welcome_back">Welcome back!</string>
+    <string name="dont_have_an_account">Don\'t have an account?</string>
 </resources>
