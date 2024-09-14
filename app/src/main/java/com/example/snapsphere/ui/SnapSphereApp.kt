@@ -60,7 +60,6 @@ fun SnapSphereApp(
             }
             MyPostsScreen(
                 igViewModel = igViewModel,
-                modifier = modifier,
                 navigateToScreen = { screen: Screens ->
                     navController.navigate(screen.route) {
                         popUpTo(0)

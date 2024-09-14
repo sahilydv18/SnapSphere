@@ -16,6 +16,7 @@ import com.example.snapsphere.R
 import com.example.snapsphere.Screens
 import com.example.snapsphere.viewmodel.IgViewModel
 
+// used to display toast on any error in the whole app
 @Composable
 fun NotificationToastMessage(
     igViewModel: IgViewModel
@@ -24,11 +25,12 @@ fun NotificationToastMessage(
 
     val notifyMessage = notifyState?.handleContent()
 
-    if(!notifyMessage.isNullOrBlank()) {
+    if (!notifyMessage.isNullOrBlank()) {
         Toast.makeText(LocalContext.current, notifyMessage, Toast.LENGTH_LONG).show()
     }
 }
 
+// used to redirect user to feed screen on successful signup or login
 @Composable
 fun CheckSignedIn(
     igViewModel: IgViewModel,
@@ -40,12 +42,13 @@ fun CheckSignedIn(
 
     val signedIn = igViewModel.signedIn.value
 
-    if(signedIn && !alreadyLoggedIn.value) {
+    if (signedIn && !alreadyLoggedIn.value) {
         alreadyLoggedIn.value = true
         goToFeedScreen()
     }
 }
 
+// bottom nav bar for the app
 @Composable
 fun BottomNavBar(
     currentScreen: Int,
@@ -84,7 +87,7 @@ fun BottomNavBar(
                 },
                 icon = {
                     Icon(
-                        painter = painterResource(id = if(selectedItem == index) selectedIcons[index] else unselectedIcons[index]),
+                        painter = painterResource(id = if (selectedItem == index) selectedIcons[index] else unselectedIcons[index]),
                         contentDescription = null
                     )
                 }
