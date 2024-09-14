@@ -21,7 +21,7 @@ class IgViewModel @Inject constructor(
 ) : ViewModel() {
 
     // flag to check if user is signed in or not
-    private val _signedIn = mutableStateOf<Boolean?>(null)
+    private val _signedIn = mutableStateOf(false)
     val signedIn = _signedIn
 
     // flag for checking if sign up is in progress or not
