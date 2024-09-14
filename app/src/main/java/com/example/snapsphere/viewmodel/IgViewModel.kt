@@ -21,7 +21,7 @@ class IgViewModel @Inject constructor(
 ) : ViewModel() {
 
     // flag to check if user is signed in or not
-    private val _signedIn = mutableStateOf(false)
+    private val _signedIn = mutableStateOf<Boolean?>(null)
     val signedIn = _signedIn
 
     // flag for checking if sign up is in progress or not
@@ -88,7 +88,7 @@ class IgViewModel @Inject constructor(
                     auth.currentUser?.uid?.let {
                         getUserData(it)
                     }
-                    handleException(customMessage = "Login Successful")
+                    //handleException(customMessage = "Login Successful")
                     _inProgress.value = false
                 } else {
                     handleException(task.exception, "Login failed")

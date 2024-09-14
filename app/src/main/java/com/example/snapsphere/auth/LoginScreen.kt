@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -41,14 +42,23 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.snapsphere.R
+import com.example.snapsphere.main.CheckSignedIn
 import com.example.snapsphere.viewmodel.IgViewModel
 
 @Composable
 fun LoginScreen(
     navigateToSignUpScreen: () -> Unit,
+    goToFeedScreen: () -> Unit,
     modifier: Modifier,
     igViewModel: IgViewModel
 ) {
+
+    CheckSignedIn(
+        igViewModel = igViewModel,
+        goToFeedScreen = goToFeedScreen
+    )
+
+    val focus = LocalFocusManager.current
 
     var email by rememberSaveable {
         mutableStateOf("")
@@ -152,14 +162,15 @@ fun LoginScreen(
         // login button
         Button(
             onClick = {
+                focus.clearFocus(force = true)
                 igViewModel.onLogin(email = email, password = password)
             },
             enabled = email.isNotBlank() && password.isNotBlank()
         ) {
             if (igViewModel.inProgress.value) {
                 CircularProgressIndicator(
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.size(28.dp)
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(24.dp)
                 )
             } else {
                 Text(text = stringResource(id = R.string.login))

@@ -31,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -42,15 +43,53 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.snapsphere.R
+import com.example.snapsphere.main.CheckSignedIn
 import com.example.snapsphere.viewmodel.IgViewModel
 
 // sign up screen
 @Composable
 fun SignUpScreen(
     navigateToLoginScreen: () -> Unit,
+    goToFeedScreen: () -> Unit,
     modifier: Modifier,
     igViewModel: IgViewModel
 ) {
+
+    CheckSignedIn(
+        igViewModel = igViewModel,
+        goToFeedScreen = goToFeedScreen
+    )
+
+    val focus = LocalFocusManager.current
+
+    var username by rememberSaveable {
+        mutableStateOf("")
+    }
+
+    var email by rememberSaveable {
+        mutableStateOf("")
+    }
+
+    var password by rememberSaveable {
+        mutableStateOf("")
+    }
+
+    var showPassword by rememberSaveable {
+        mutableStateOf(false)
+    }
+
+    var confirmPassword by rememberSaveable {
+        mutableStateOf("")
+    }
+
+    var showConfirmPassword by rememberSaveable {
+        mutableStateOf(false)
+    }
+
+    var error by rememberSaveable {
+        mutableStateOf(false)
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -58,35 +97,6 @@ fun SignUpScreen(
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
-        var username by rememberSaveable {
-            mutableStateOf("")
-        }
-
-        var email by rememberSaveable {
-            mutableStateOf("")
-        }
-
-        var password by rememberSaveable {
-            mutableStateOf("")
-        }
-
-        var showPassword by rememberSaveable {
-            mutableStateOf(false)
-        }
-
-        var confirmPassword by rememberSaveable {
-            mutableStateOf("")
-        }
-
-        var showConfirmPassword by rememberSaveable {
-            mutableStateOf(false)
-        }
-
-        var error by rememberSaveable {
-            mutableStateOf(false)
-        }
-
         LaunchedEffect(password, confirmPassword) {
             if (password.isNotBlank() && confirmPassword.isNotBlank()) {
                 error = password != confirmPassword
@@ -230,6 +240,7 @@ fun SignUpScreen(
         // sign up button
         Button(
             onClick = {
+                focus.clearFocus(force = true)
                 igViewModel.onSignUp(
                     username = username,
                     email = email,
@@ -240,8 +251,8 @@ fun SignUpScreen(
         ) {
             if (igViewModel.inProgress.value) {
                 CircularProgressIndicator(
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.size(28.dp)
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(24.dp)
                 )
             } else {
                 Text(text = stringResource(id = R.string.sign_up))
