@@ -14,7 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.snapsphere.main.NotificationToastMessage
+import com.example.snapsphere.utils.NotificationToastMessage
 import com.example.snapsphere.ui.LoginAndSignupNav
 import com.example.snapsphere.ui.SnapSphereApp
 import com.example.snapsphere.ui.theme.SnapSphereTheme

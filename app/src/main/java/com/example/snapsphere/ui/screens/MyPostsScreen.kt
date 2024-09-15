@@ -3,6 +3,7 @@ package com.example.snapsphere.ui.screens
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,8 +14,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -27,21 +32,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.snapsphere.R
 import com.example.snapsphere.Screens
-import com.example.snapsphere.main.BottomNavBar
+import com.example.snapsphere.utils.BottomNavBar
+import com.example.snapsphere.utils.UserImage
 import com.example.snapsphere.viewmodel.IgViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyPostsScreen(
     igViewModel: IgViewModel,
-    navigateToScreen: (Screens) -> Unit
+    navigateToScreen: (Screens) -> Unit,
+    goToProfileScreen: () -> Unit
 ) {
     Scaffold(
         bottomBar = {
@@ -66,7 +73,7 @@ fun MyPostsScreen(
     ) { innerPadding ->
 
         Box {
-            if(igViewModel.inProgress.value) {
+            if (igViewModel.inProgress.value) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -85,6 +92,7 @@ fun MyPostsScreen(
                     .fillMaxSize()
                     .padding(innerPadding)
                     .padding(horizontal = 16.dp)
+                    .verticalScroll(rememberScrollState())
             ) {
                 // image and basic account info
                 Row(
@@ -115,19 +123,42 @@ fun MyPostsScreen(
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
-                
+
                 // name and bio
-                Text(
-                    text = igViewModel.userData.value?.name ?: "",
-                    fontWeight = FontWeight.Bold
-                )
-                Text(text = igViewModel.userData.value?.bio ?: "")
+                if (igViewModel.userData.value?.name != null) {
+                    Text(
+                        text = "${igViewModel.userData.value?.name}",
+                        fontWeight = FontWeight.Bold
+                    )
+                } else {
+                    Text(
+                        text = stringResource(id = R.string.add_name),
+                        modifier = Modifier.clickable {
+                            goToProfileScreen()
+                        },
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                if (igViewModel.userData.value?.bio != null) {
+                    Text(text = "${igViewModel.userData.value?.bio}")
+                } else {
+                    Text(
+                        text = stringResource(id = R.string.add_bio),
+                        modifier = Modifier.clickable {
+                            goToProfileScreen()
+                        },
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 // edit profile button
                 OutlinedButton(
-                    onClick = { /*TODO*/ },
+                    onClick = {
+                        goToProfileScreen()
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(10)
                 ) {
@@ -138,8 +169,9 @@ fun MyPostsScreen(
 
                 // posts
                 Column(
-                    modifier = Modifier.weight(1f).fillMaxSize()
-                        .background(Color.Gray),
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
@@ -150,19 +182,28 @@ fun MyPostsScreen(
     }
 }
 
+// composable for displaying profile image for the user
 @Composable
 fun ProfileImage(
     image: String?,
     onClick: () -> Unit,
     modifier: Modifier
 ) {
-    Image(
-        painter = painterResource(id = R.drawable.guy),
-        contentDescription = null,
-        modifier = modifier
-            .size(56.dp)
-            .clip(CircleShape)
-    )
+    Box(
+        modifier = modifier.clickable { onClick() }
+    ) {
+        UserImage(image = image)
+        Image(
+            imageVector = Icons.Default.Add,
+            contentDescription = null,
+            modifier = Modifier
+                .clip(CircleShape)
+                .size(24.dp)
+                .background(MaterialTheme.colorScheme.primary)
+                .align(Alignment.BottomEnd),
+            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onPrimary)
+        )
+    }
 }
 
 @Composable

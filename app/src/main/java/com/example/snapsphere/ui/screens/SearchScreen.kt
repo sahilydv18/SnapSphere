@@ -10,7 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.example.snapsphere.Screens
-import com.example.snapsphere.main.BottomNavBar
+import com.example.snapsphere.utils.BottomNavBar
 import com.example.snapsphere.viewmodel.IgViewModel
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")

@@ -5,6 +5,8 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.EaseIn
 import androidx.compose.animation.core.EaseOut
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
@@ -15,6 +17,7 @@ import com.example.snapsphere.auth.LoginScreen
 import com.example.snapsphere.auth.SignUpScreen
 import com.example.snapsphere.ui.screens.FeedScreen
 import com.example.snapsphere.ui.screens.MyPostsScreen
+import com.example.snapsphere.ui.screens.ProfileScreen
 import com.example.snapsphere.ui.screens.SearchScreen
 import com.example.snapsphere.viewmodel.IgViewModel
 
@@ -25,7 +28,26 @@ fun LoginAndSignupNav(
 ) {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = Screens.LoginInScreen.route) {
+    NavHost(
+        navController = navController,
+        startDestination = Screens.LoginInScreen.route,
+        enterTransition = {
+            fadeIn(
+                animationSpec = tween(
+                    durationMillis = 300,
+                    easing = EaseIn
+                )
+            )
+        },
+        exitTransition = {
+            fadeOut(
+                animationSpec = tween(
+                    durationMillis = 300,
+                    easing = EaseOut
+                )
+            )
+        }
+    ) {
         // login screen
         composable(
             route = Screens.LoginInScreen.route,
@@ -152,6 +174,19 @@ fun LoginAndSignupNav(
                     navController.navigate(screen.route) {
                         popUpTo(0)
                     }
+                },
+                goToProfileScreen = {
+                    navController.navigate(Screens.ProfileScreen.route)
+                }
+            )
+        }
+
+        // profile screen
+        composable(Screens.ProfileScreen.route) {
+            ProfileScreen(
+                igViewModel = igViewModel,
+                onBack = {
+                    navController.popBackStack()
                 }
             )
         }

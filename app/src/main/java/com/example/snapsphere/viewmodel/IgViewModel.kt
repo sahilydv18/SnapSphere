@@ -74,6 +74,7 @@ class IgViewModel @Inject constructor(
             }
             .addOnFailureListener {
                 handleException(it, "Signup failed")
+                _inProgress.value = false
             }
     }
 
@@ -126,15 +127,48 @@ class IgViewModel @Inject constructor(
             db.collection(USERS).document(uid).get()
                 .addOnSuccessListener { user ->
                     if (user.exists()) {      // checking if the user already exists
-                        user.reference.update(userData.toMap())
-                            .addOnSuccessListener {
-                                this._userData.value = userData
-                                _inProgress.value = false
-                            }
-                            .addOnFailureListener {
-                                handleException(it, customMessage = "Cannot update user")
-                            }
+                        // updating user if the user exists
+                        if(username == _userData.value?.username) {     // checking if the user has edited the username or not
+                            // if user hasn't edited the user name then just updating the values
+                            user.reference.update(userData.toMap())
+                                .addOnSuccessListener {
+                                    this._userData.value = userData
+                                    _inProgress.value = false
+                                    handleException(customMessage = "Profile updated! You're good to go.")
+                                }
+                                .addOnFailureListener {
+                                    handleException(it, customMessage = "Cannot update user")
+                                    _inProgress.value = false
+                                }
+                        } else {
+                            // if user has edited the user name then we will first check if the new username is already taken or not
+                            db.collection(USERS).whereEqualTo("username", username).get()
+                                .addOnSuccessListener {     document ->
+                                    if(!document.isEmpty) {
+                                        // if new username is already taken then showing toast to user
+                                        handleException(customMessage = "This username is already taken. Please try a different one.")
+                                        _inProgress.value = false
+                                    } else {
+                                        // if new username is not taken then updating the user data
+                                        user.reference.update(userData.toMap())
+                                            .addOnSuccessListener {
+                                                this._userData.value = userData
+                                                _inProgress.value = false
+                                                handleException(customMessage = "Profile updated! You're good to go.")
+                                            }
+                                            .addOnFailureListener {
+                                                handleException(it, customMessage = "Cannot update user")
+                                                _inProgress.value = false
+                                            }
+                                    }
+                                }
+                                .addOnFailureListener {
+                                    handleException(it,"Cannot update user")
+                                    _inProgress.value = false
+                                }
+                        }
                     } else {
+                        // creating user if the user doesn't exists
                         db.collection(USERS).document(uid).set(userData)
                         getUserData(uid)
                         _inProgress.value = false
@@ -162,11 +196,23 @@ class IgViewModel @Inject constructor(
     }
 
     // function to show toast when an exception occurs
-    fun handleException(e: Exception? = null, customMessage: String = "") {
+    private fun handleException(e: Exception? = null, customMessage: String = "") {
         e?.printStackTrace()
         val errorMsg = e?.localizedMessage ?: ""
         val message =
             if (customMessage.isEmpty()) errorMsg else if (errorMsg.isEmpty()) customMessage else "$customMessage: $errorMsg"
         _popupNotification.value = Event(message)
+    }
+
+    fun updateUserProfile(
+        name: String,
+        username: String,
+        bio: String
+    ) {
+        createOrUpdateProfile(
+            name = name,
+            username = username,
+            bio = bio
+        )
     }
 }

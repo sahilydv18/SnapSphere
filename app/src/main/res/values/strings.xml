@@ -17,4 +17,11 @@
     <string name="followers">followers</string>
     <string name="following">following</string>
     <string name="edit_profile">Edit profile</string>
+    <string name="add_name">Add Name</string>
+    <string name="add_bio">Add Bio</string>
+    <string name="save">Save</string>
+    <string name="logout">Logout</string>
+    <string name="name">Name</string>
+    <string name="at">\@</string>
+    <string name="bio">Bio</string>
 </resources>

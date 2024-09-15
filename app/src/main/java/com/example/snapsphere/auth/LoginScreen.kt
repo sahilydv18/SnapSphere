@@ -42,7 +42,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.snapsphere.R
-import com.example.snapsphere.main.CheckSignedIn
+import com.example.snapsphere.utils.CheckSignedIn
 import com.example.snapsphere.viewmodel.IgViewModel
 
 @Composable
