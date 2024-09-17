@@ -25,4 +25,8 @@
     <string name="at">\@</string>
     <string name="bio">Bio</string>
     <string name="change_pfp">Change profile picture</string>
+    <string name="post">Post</string>
+    <string name="new_post">New Post</string>
+    <string name="description">Description</string>
+    <string name="description_placeholder">Check out this cool image!</string>
 </resources>

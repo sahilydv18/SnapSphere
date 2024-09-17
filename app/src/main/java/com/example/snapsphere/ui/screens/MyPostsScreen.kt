@@ -1,5 +1,8 @@
 package com.example.snapsphere.ui.screens
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -20,7 +23,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -31,7 +33,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -40,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import com.example.snapsphere.R
 import com.example.snapsphere.Screens
 import com.example.snapsphere.utils.BottomNavBar
+import com.example.snapsphere.utils.CommonProgressSpinner
 import com.example.snapsphere.utils.UserImage
 import com.example.snapsphere.viewmodel.IgViewModel
 
@@ -48,134 +50,136 @@ import com.example.snapsphere.viewmodel.IgViewModel
 fun MyPostsScreen(
     igViewModel: IgViewModel,
     navigateToScreen: (Screens) -> Unit,
-    goToProfileScreen: () -> Unit
+    goToProfileScreen: () -> Unit,
+    navigateToNewPostScreen: (String) -> Unit
 ) {
-    Scaffold(
-        bottomBar = {
-            BottomNavBar(
-                currentScreen = 2,
-                navigateToScreen = { screen: Screens ->
-                    navigateToScreen(screen)
-                }
-            )
-        },
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "@${igViewModel.userData.value?.username ?: ""}",
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    )
-                }
-            )
-        }
-    ) { innerPadding ->
 
-        Box {
-            if (igViewModel.inProgress.value) {
+    // launcher for selecting image when the user clicks on the pfp on the MyPostsScreen
+    val createPostLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) {   uri: Uri? ->
+        uri?.let {
+            val encodedString = Uri.encode(it.toString())
+            val route = Screens.NewPostScreen.createRoute(encodedString)
+            navigateToNewPostScreen(route)
+        }
+    }
+
+    if (igViewModel.inProgress.value) {
+        CommonProgressSpinner()
+    } else {
+        Scaffold(
+            bottomBar = {
+                BottomNavBar(
+                    currentScreen = 2,
+                    navigateToScreen = { screen: Screens ->
+                        navigateToScreen(screen)
+                    }
+                )
+            },
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = "@${igViewModel.userData.value?.username ?: ""}",
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                )
+            }
+        ) { innerPadding ->
+            Box {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color.Gray),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                        .padding(innerPadding)
+                        .padding(horizontal = 16.dp)
+                        .verticalScroll(rememberScrollState())
                 ) {
-                    CircularProgressIndicator(
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                }
-            }
+                    // image and basic account info
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        ProfileImage(
+                            image = igViewModel.userData.value?.imageUrl,
+                            onClick = {
+                                createPostLauncher.launch("image/*")
+                            },
+                            modifier = Modifier.align(Alignment.CenterVertically)
+                        )
+                        BasicAccountInfo(
+                            about = R.string.posts,
+                            value = 5,
+                            modifier = Modifier.align(Alignment.CenterVertically)
+                        )
+                        BasicAccountInfo(
+                            about = R.string.followers,
+                            value = 5,
+                            modifier = Modifier.align(Alignment.CenterVertically)
+                        )
+                        BasicAccountInfo(
+                            about = R.string.following,
+                            value = 5,
+                            modifier = Modifier.align(Alignment.CenterVertically)
+                        )
+                    }
 
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(horizontal = 16.dp)
-                    .verticalScroll(rememberScrollState())
-            ) {
-                // image and basic account info
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    ProfileImage(
-                        image = igViewModel.userData.value?.imageUrl,
-                        onClick = {},
-                        modifier = Modifier.align(Alignment.CenterVertically)
-                    )
-                    BasicAccountInfo(
-                        about = R.string.posts,
-                        value = 5,
-                        modifier = Modifier.align(Alignment.CenterVertically)
-                    )
-                    BasicAccountInfo(
-                        about = R.string.followers,
-                        value = 5,
-                        modifier = Modifier.align(Alignment.CenterVertically)
-                    )
-                    BasicAccountInfo(
-                        about = R.string.following,
-                        value = 5,
-                        modifier = Modifier.align(Alignment.CenterVertically)
-                    )
-                }
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                Spacer(modifier = Modifier.height(8.dp))
+                    // name and bio
+                    if (igViewModel.userData.value?.name != null) {
+                        Text(
+                            text = "${igViewModel.userData.value?.name}",
+                            fontWeight = FontWeight.Bold
+                        )
+                    } else {
+                        Text(
+                            text = stringResource(id = R.string.add_name),
+                            modifier = Modifier.clickable {
+                                goToProfileScreen()
+                            },
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    if (igViewModel.userData.value?.bio != null) {
+                        Text(text = "${igViewModel.userData.value?.bio}")
+                    } else {
+                        Text(
+                            text = stringResource(id = R.string.add_bio),
+                            modifier = Modifier.clickable {
+                                goToProfileScreen()
+                            },
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
 
-                // name and bio
-                if (igViewModel.userData.value?.name != null) {
-                    Text(
-                        text = "${igViewModel.userData.value?.name}",
-                        fontWeight = FontWeight.Bold
-                    )
-                } else {
-                    Text(
-                        text = stringResource(id = R.string.add_name),
-                        modifier = Modifier.clickable {
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // edit profile button
+                    OutlinedButton(
+                        onClick = {
                             goToProfileScreen()
                         },
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                if (igViewModel.userData.value?.bio != null) {
-                    Text(text = "${igViewModel.userData.value?.bio}")
-                } else {
-                    Text(
-                        text = stringResource(id = R.string.add_bio),
-                        modifier = Modifier.clickable {
-                            goToProfileScreen()
-                        },
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(10)
+                    ) {
+                        Text(text = stringResource(id = R.string.edit_profile))
+                    }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                // edit profile button
-                OutlinedButton(
-                    onClick = {
-                        goToProfileScreen()
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(10)
-                ) {
-                    Text(text = stringResource(id = R.string.edit_profile))
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // posts
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(text = "Posts List")
+                    // posts
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(text = "Posts List")
+                    }
                 }
             }
         }

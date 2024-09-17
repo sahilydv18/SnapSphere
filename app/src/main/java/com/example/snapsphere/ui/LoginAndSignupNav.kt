@@ -1,6 +1,5 @@
 package com.example.snapsphere.ui
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.EaseIn
 import androidx.compose.animation.core.EaseOut
@@ -16,9 +15,6 @@ import com.example.snapsphere.Screens
 import com.example.snapsphere.auth.LoginScreen
 import com.example.snapsphere.auth.SignUpScreen
 import com.example.snapsphere.ui.screens.FeedScreen
-import com.example.snapsphere.ui.screens.MyPostsScreen
-import com.example.snapsphere.ui.screens.ProfileScreen
-import com.example.snapsphere.ui.screens.SearchScreen
 import com.example.snapsphere.viewmodel.IgViewModel
 
 @Composable
@@ -137,59 +133,6 @@ fun LoginAndSignupNav(
                 modifier = modifier,
                 navigateToScreen = { screen: Screens ->
                     navController.navigate(screen.route) {
-                        popUpTo(0)
-                    }
-                }
-            )
-        }
-
-        // search screen
-        composable(Screens.SearchScreen.route) {
-            BackHandler {
-                navController.navigate(Screens.FeedScreen.route) {
-                    popUpTo(0)
-                }
-            }
-            SearchScreen(
-                igViewModel = igViewModel,
-                modifier = modifier,
-                navigateToScreen = { screen: Screens ->
-                    navController.navigate(screen.route) {
-                        popUpTo(0)
-                    }
-                }
-            )
-        }
-
-        // my posts screen
-        composable(Screens.MyPostsScreen.route) {
-            BackHandler {
-                navController.navigate(Screens.FeedScreen.route) {
-                    popUpTo(0)
-                }
-            }
-            MyPostsScreen(
-                igViewModel = igViewModel,
-                navigateToScreen = { screen: Screens ->
-                    navController.navigate(screen.route) {
-                        popUpTo(0)
-                    }
-                },
-                goToProfileScreen = {
-                    navController.navigate(Screens.ProfileScreen.route)
-                }
-            )
-        }
-
-        // profile screen
-        composable(Screens.ProfileScreen.route) {
-            ProfileScreen(
-                igViewModel = igViewModel,
-                onBack = {
-                    navController.popBackStack()
-                },
-                onLogout = {
-                    navController.navigate(Screens.LoginInScreen.route) {
                         popUpTo(0)
                     }
                 }

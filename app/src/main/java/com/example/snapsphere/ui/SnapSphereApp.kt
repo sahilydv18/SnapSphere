@@ -16,6 +16,7 @@ import com.example.snapsphere.Screens
 import com.example.snapsphere.auth.LoginScreen
 import com.example.snapsphere.ui.screens.FeedScreen
 import com.example.snapsphere.ui.screens.MyPostsScreen
+import com.example.snapsphere.ui.screens.NewPostScreen
 import com.example.snapsphere.ui.screens.ProfileScreen
 import com.example.snapsphere.ui.screens.SearchScreen
 import com.example.snapsphere.viewmodel.IgViewModel
@@ -94,6 +95,9 @@ fun SnapSphereApp(
                 },
                 goToProfileScreen = {
                     navController.navigate(Screens.ProfileScreen.route)
+                },
+                navigateToNewPostScreen = { route ->
+                    navController.navigate(route)
                 }
             )
         }
@@ -111,6 +115,20 @@ fun SnapSphereApp(
                     }
                 }
             )
+        }
+
+        // new post screen
+        composable(Screens.NewPostScreen.route) {   navBackStackEntry ->
+            val imageUri = navBackStackEntry.arguments?.getString("imageUri")
+            imageUri?.let {
+                NewPostScreen(
+                    igViewModel = igViewModel,
+                    encodedUri = it,
+                    onBack = {
+                        navController.popBackStack()
+                    }
+                )
+            }
         }
 
         // login screen (added this just to handle the logout functionality)
