@@ -1,5 +1,6 @@
 package com.example.snapsphere.viewmodel
 
+import android.net.Uri
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.example.snapsphere.data.Event
@@ -9,6 +10,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
 import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.util.UUID
 import javax.inject.Inject
 
 private const val USERS = "users"
@@ -179,6 +181,44 @@ class IgViewModel @Inject constructor(
                     _inProgress.value = false
                 }
         }
+    }
+
+    // function to upload image (image can be anything profile image, post image etc.
+    private fun uploadImage(uri: Uri, onSuccess: (Uri) -> Unit) {
+        _inProgress.value = true
+
+        val storageRef = storage.reference
+        val uuid = UUID.randomUUID()        // it provides a unique id to the image
+        val imageRef = storageRef.child("images/$uuid")         // image will be stored inside the images folder with the unique UID
+        val uploadTask = imageRef.putFile(uri)
+
+        uploadTask
+            .addOnSuccessListener {
+                // when the image is successfully uploaded then getting the url of the image from the firebase storage and storing it in result
+                val result = it.metadata?.reference?.downloadUrl
+                result?.addOnSuccessListener(onSuccess)
+            }
+            .addOnFailureListener {
+                handleException(it, "Couldn't upload image.")
+                _inProgress.value = false
+            }
+    }
+
+    // function to upload/update profile image
+    fun uploadProfileImage(uri: Uri) {
+        uploadImage(uri) { imageUrl ->
+            createOrUpdateProfile(
+                imageUrl = imageUrl.toString()
+            )
+        }
+    }
+
+    // function to logout
+    fun onLogout() {
+        auth.signOut()
+        _signedIn.value = false
+        _userData.value = null
+        handleException(customMessage = "You're logged out. Come back anytime!")
     }
 
     // function to get user data if the creation or updation of user is successful

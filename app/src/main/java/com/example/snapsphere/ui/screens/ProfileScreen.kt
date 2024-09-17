@@ -1,6 +1,10 @@
 package com.example.snapsphere.ui.screens
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -43,13 +48,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.example.snapsphere.R
+import com.example.snapsphere.utils.UserImage
 import com.example.snapsphere.viewmodel.IgViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     igViewModel: IgViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onLogout: () -> Unit
 ) {
     var name by rememberSaveable {
         mutableStateOf(igViewModel.userData.value?.name ?: "")
@@ -64,6 +71,13 @@ fun ProfileScreen(
     }
 
     val focus = LocalFocusManager.current
+
+    // launcher for getting image from the user's gallery
+    val launcher = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
+        uri?.let {
+            igViewModel.uploadProfileImage(it)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -107,7 +121,10 @@ fun ProfileScreen(
             ) {
                 Spacer(modifier = Modifier.weight(1f))
                 TextButton(
-                    onClick = {},
+                    onClick = {
+                        igViewModel.onLogout()
+                        onLogout()
+                    },
                     colors = ButtonDefaults.textButtonColors(
                         contentColor = Color.Red
                     )
@@ -148,13 +165,24 @@ fun ProfileScreen(
                 // user image
                 Column(
                     modifier = Modifier
-                        .height(200.dp)
-                        .background(Color.Gray)
                         .fillMaxWidth()
+                        .padding(top = 16.dp)
+                        .clickable {
+                            launcher.launch("image/*")
+                        },
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-
+                    UserImage(
+                        image = igViewModel.userData.value?.imageUrl,
+                        modifier = Modifier.size(120.dp)
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = stringResource(id = R.string.change_pfp),
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
-                
+
                 Spacer(modifier = Modifier.height(32.dp))
 
                 // name text field

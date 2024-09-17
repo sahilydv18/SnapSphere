@@ -187,6 +187,11 @@ fun LoginAndSignupNav(
                 igViewModel = igViewModel,
                 onBack = {
                     navController.popBackStack()
+                },
+                onLogout = {
+                    navController.navigate(Screens.LoginInScreen.route) {
+                        popUpTo(0)
+                    }
                 }
             )
         }

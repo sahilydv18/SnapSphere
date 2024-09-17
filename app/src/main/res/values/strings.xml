@@ -24,4 +24,5 @@
     <string name="name">Name</string>
     <string name="at">\@</string>
     <string name="bio">Bio</string>
+    <string name="change_pfp">Change profile picture</string>
 </resources>
