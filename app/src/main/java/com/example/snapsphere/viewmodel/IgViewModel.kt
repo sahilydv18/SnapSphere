@@ -1,12 +1,15 @@
 package com.example.snapsphere.viewmodel
 
 import android.net.Uri
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.example.snapsphere.data.Event
+import com.example.snapsphere.data.PostData
 import com.example.snapsphere.data.UserData
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.toObject
 import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,6 +17,7 @@ import java.util.UUID
 import javax.inject.Inject
 
 private const val USERS = "users"
+private const val POSTS = "posts"
 
 @HiltViewModel
 class IgViewModel @Inject constructor(
@@ -35,6 +39,13 @@ class IgViewModel @Inject constructor(
 
     private val _popupNotification = mutableStateOf<Event<String>?>(null)
     val popupNotification = _popupNotification
+
+    // flag for checking reloading of user posts
+    private val _refreshPostsProgress = mutableStateOf(false)
+    val refreshPostsProgress = _refreshPostsProgress
+
+    private val _userPosts = mutableStateOf<List<PostData>>(listOf())
+    val userPosts = _userPosts
 
     init {
         //auth.signOut()
@@ -221,6 +232,86 @@ class IgViewModel @Inject constructor(
         handleException(customMessage = "You're logged out. Come back anytime!")
     }
 
+    // function to make new post
+    fun onNewPost(uri: Uri, description: String, onPostSuccess: () -> Unit) {
+        // first we are uploading the image to firebase storage and the retrieving its url
+        uploadImage(uri) {
+            onCreatePost(it, description, onPostSuccess)
+        }
+    }
+
+    // function to create a post
+    private fun onCreatePost(imageUrl: Uri, description: String, onPostSuccess: () -> Unit) {
+        _inProgress.value = true
+        val currentUid = auth.currentUser?.uid
+        val currentUsername = _userData.value?.username
+        val currentPfp = _userData.value?.imageUrl
+
+        if(currentUid != null) {
+            val postUUID = UUID.randomUUID().toString()
+
+            val post = PostData(
+                postId = postUUID,
+                userId = currentUid,
+                username = currentUsername,
+                userImage = currentPfp,
+                postImage = imageUrl.toString(),
+                postDescription = description,
+                time = System.currentTimeMillis()
+            )
+
+            db.collection(POSTS).document(postUUID).set(post)
+                .addOnSuccessListener {
+                    _popupNotification.value = Event("Post created!")
+                    _inProgress.value = false
+                    getUserPosts()
+                    onPostSuccess.invoke()
+                }
+                .addOnFailureListener {
+                    handleException(it, "Unable to create post.")
+                    _inProgress.value = false
+                }
+        } else {
+            onLogout()
+            _inProgress.value = false
+        }
+    }
+
+    // function to get user posts
+    private fun getUserPosts() {
+        val userUid = auth.currentUser?.uid
+
+        if(userUid != null) {
+            _refreshPostsProgress.value = true
+
+            db.collection(POSTS).whereEqualTo("userId", userUid).get()      // getting only user specific posts
+                .addOnSuccessListener {     documents ->
+                    convertToPost(
+                        documents = documents,
+                        outState = _userPosts
+                    )
+                    _refreshPostsProgress.value = false
+                }
+                .addOnFailureListener {
+                    handleException(it, "Oops! We couldn't load your posts right now.")
+                    _refreshPostsProgress.value = false
+                }
+        } else {
+            onLogout()
+        }
+    }
+
+    // function for converting a post to an object and storing it in the state
+    private fun convertToPost(documents: QuerySnapshot, outState: MutableState<List<PostData>>) {
+        val posts = mutableListOf<PostData>()
+        documents.forEach {
+            val post = it.toObject<PostData>()
+            posts.add(post)
+        }
+        posts.sortByDescending { it.time }
+        outState.value = posts
+    }
+
     // function to get user data if the creation or updation of user is successful
     private fun getUserData(userId: String) {
         _inProgress.value = true
@@ -229,6 +320,7 @@ class IgViewModel @Inject constructor(
                 val userData = it.toObject<UserData>()
                 _userData.value = userData
                 _inProgress.value = false
+                getUserPosts()
             }
             .addOnFailureListener {
                 handleException(it, "Cannot retrieve user data")

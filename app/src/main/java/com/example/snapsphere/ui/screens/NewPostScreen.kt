@@ -1,5 +1,6 @@
 package com.example.snapsphere.ui.screens
 
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -34,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.example.snapsphere.R
@@ -77,6 +80,13 @@ fun NewPostScreen(
                             Spacer(modifier = Modifier.weight(1f))
                             TextButton(onClick = {
                                 focus.clearFocus(force = true)
+                                igViewModel.onNewPost(
+                                    uri = Uri.parse(image),
+                                    description = description,
+                                    onPostSuccess = {
+                                        onBack()
+                                    }
+                                )
                             }) {
                                 Text(text = stringResource(id = R.string.post))
                             }
@@ -129,7 +139,10 @@ fun NewPostScreen(
                     },
                     placeholder = {
                         Text(text = stringResource(id = R.string.description_placeholder))
-                    }
+                    },
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        imeAction = ImeAction.Done
+                    )
                 )
             }
         }

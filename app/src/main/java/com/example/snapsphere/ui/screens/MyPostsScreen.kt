@@ -17,10 +17,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -40,7 +41,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.snapsphere.R
 import com.example.snapsphere.Screens
+import com.example.snapsphere.data.PostData
 import com.example.snapsphere.utils.BottomNavBar
+import com.example.snapsphere.utils.CommonImage
 import com.example.snapsphere.utils.CommonProgressSpinner
 import com.example.snapsphere.utils.UserImage
 import com.example.snapsphere.viewmodel.IgViewModel
@@ -55,13 +58,14 @@ fun MyPostsScreen(
 ) {
 
     // launcher for selecting image when the user clicks on the pfp on the MyPostsScreen
-    val createPostLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) {   uri: Uri? ->
-        uri?.let {
-            val encodedString = Uri.encode(it.toString())
-            val route = Screens.NewPostScreen.createRoute(encodedString)
-            navigateToNewPostScreen(route)
+    val createPostLauncher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
+            uri?.let {
+                val encodedString = Uri.encode(it.toString())
+                val route = Screens.NewPostScreen.createRoute(encodedString)
+                navigateToNewPostScreen(route)
+            }
         }
-    }
 
     if (igViewModel.inProgress.value) {
         CommonProgressSpinner()
@@ -93,7 +97,7 @@ fun MyPostsScreen(
                         .fillMaxSize()
                         .padding(innerPadding)
                         .padding(horizontal = 16.dp)
-                        .verticalScroll(rememberScrollState())
+                    //.verticalScroll(rememberScrollState())
                 ) {
                     // image and basic account info
                     Row(
@@ -174,16 +178,53 @@ fun MyPostsScreen(
                     Column(
                         modifier = Modifier
                             .weight(1f)
-                            .fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                            .fillMaxSize()
                     ) {
-                        Text(text = "Posts List")
+                        UserPosts(
+                            isPostLoading = igViewModel.refreshPostsProgress.value,
+                            posts = igViewModel.userPosts.value
+                        )
                     }
                 }
             }
         }
     }
+}
+
+// composable for displaying posts
+@Composable
+fun UserPosts(isPostLoading: Boolean, posts: List<PostData>) {
+    if (isPostLoading) {
+        CommonProgressSpinner()
+    } else {
+        if (posts.isNotEmpty()) {
+            LazyVerticalGrid(columns = GridCells.Fixed(3)) {
+//                itemsIndexed(posts) { index, post ->
+//                    Log.d("Index", index.toString())
+//                    Post(
+//                        post = post,
+//                        isLastOnRow = index % 3 == 0
+//                    )
+//                }
+                items(posts) {
+                    Post(post = it)
+                }
+            }
+        } else {
+            Text(text = "No posts yet.")
+        }
+    }
+}
+
+@Composable
+fun Post(post: PostData) {
+    CommonImage(
+        image = post.postImage,
+        modifier = Modifier
+            .size(width = 200.dp, height = 160.dp)
+            .padding(end = 12.dp, bottom = 12.dp)
+            .clickable { }
+    )
 }
 
 // composable for displaying profile image for the user
