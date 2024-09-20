@@ -29,4 +29,8 @@
     <string name="new_post">New Post</string>
     <string name="description">Description</string>
     <string name="description_placeholder">Check out this cool image!</string>
+    <string name="no_posts">It\'s a bit quiet here… no posts yet!</string>
+    <string name="follow">Follow</string>
+    <string name="likes">likes</string>
+    <string name="delete">Delete</string>
 </resources>

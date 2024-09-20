@@ -14,4 +14,5 @@ sealed class Screens(val route: String) {
         // we need to pass the Uri of the image when navigating to NewPostScreen
         fun createRoute(uri: String) = "NewPostScreen/$uri"
     }
+    data object SinglePostScreen: Screens("SinglePostScree")
 }

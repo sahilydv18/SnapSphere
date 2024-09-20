@@ -14,11 +14,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.snapsphere.Screens
 import com.example.snapsphere.auth.LoginScreen
+import com.example.snapsphere.data.PostData
 import com.example.snapsphere.ui.screens.FeedScreen
 import com.example.snapsphere.ui.screens.MyPostsScreen
 import com.example.snapsphere.ui.screens.NewPostScreen
 import com.example.snapsphere.ui.screens.ProfileScreen
 import com.example.snapsphere.ui.screens.SearchScreen
+import com.example.snapsphere.ui.screens.SinglePostScreen
 import com.example.snapsphere.viewmodel.IgViewModel
 
 @Composable
@@ -98,6 +100,22 @@ fun SnapSphereApp(
                 },
                 navigateToNewPostScreen = { route ->
                     navController.navigate(route)
+                },
+                onPostClick = { post: PostData ->
+                    navController.currentBackStackEntry?.savedStateHandle?.set("postData", post)
+                    navController.navigate(Screens.SinglePostScreen.route)
+                }
+            )
+        }
+
+        // single post screen
+        composable(Screens.SinglePostScreen.route) {
+            val postData = navController.previousBackStackEntry?.savedStateHandle?.get<PostData>("postData") ?: PostData()
+            SinglePostScreen(
+                igViewModel = igViewModel,
+                postData = postData,
+                onBack = {
+                    navController.popBackStack()
                 }
             )
         }

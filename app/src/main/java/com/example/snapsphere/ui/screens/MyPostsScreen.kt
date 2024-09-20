@@ -54,7 +54,8 @@ fun MyPostsScreen(
     igViewModel: IgViewModel,
     navigateToScreen: (Screens) -> Unit,
     goToProfileScreen: () -> Unit,
-    navigateToNewPostScreen: (String) -> Unit
+    navigateToNewPostScreen: (String) -> Unit,
+    onPostClick: (PostData) -> Unit
 ) {
 
     // launcher for selecting image when the user clicks on the pfp on the MyPostsScreen
@@ -182,7 +183,8 @@ fun MyPostsScreen(
                     ) {
                         UserPosts(
                             isPostLoading = igViewModel.refreshPostsProgress.value,
-                            posts = igViewModel.userPosts.value
+                            posts = igViewModel.userPosts.value,
+                            onPostClick = onPostClick
                         )
                     }
                 }
@@ -193,37 +195,48 @@ fun MyPostsScreen(
 
 // composable for displaying posts
 @Composable
-fun UserPosts(isPostLoading: Boolean, posts: List<PostData>) {
+fun UserPosts(
+    isPostLoading: Boolean,
+    posts: List<PostData>,
+    onPostClick: (PostData) -> Unit
+) {
     if (isPostLoading) {
         CommonProgressSpinner()
     } else {
         if (posts.isNotEmpty()) {
             LazyVerticalGrid(columns = GridCells.Fixed(3)) {
-//                itemsIndexed(posts) { index, post ->
-//                    Log.d("Index", index.toString())
-//                    Post(
-//                        post = post,
-//                        isLastOnRow = index % 3 == 0
-//                    )
-//                }
                 items(posts) {
-                    Post(post = it)
+                    Post(
+                        post = it,
+                        onPostClick = onPostClick
+                    )
                 }
             }
         } else {
-            Text(text = "No posts yet.")
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(text = stringResource(id = R.string.no_posts))
+            }
         }
     }
 }
 
 @Composable
-fun Post(post: PostData) {
+fun Post(
+    post: PostData,
+    onPostClick: (PostData) -> Unit
+) {
     CommonImage(
         image = post.postImage,
         modifier = Modifier
             .size(width = 200.dp, height = 160.dp)
-            .padding(end = 12.dp, bottom = 12.dp)
-            .clickable { }
+            .padding(end = 2.dp, bottom = 2.dp)
+            .clickable {
+                onPostClick(post)
+            }
     )
 }
 
