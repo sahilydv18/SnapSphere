@@ -8,6 +8,7 @@ import com.example.snapsphere.data.Event
 import com.example.snapsphere.data.PostData
 import com.example.snapsphere.data.UserData
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.toObject
@@ -46,6 +47,12 @@ class IgViewModel @Inject constructor(
 
     private val _userPosts = mutableStateOf<List<PostData>>(listOf())
     val userPosts = _userPosts
+
+    private val _searchedPosts = mutableStateOf<List<PostData>>(listOf())
+    val searchedPosts = _searchedPosts
+
+    private val _searchProgress = mutableStateOf(false)
+    val searchProgress = _searchProgress
 
     init {
         //auth.signOut()
@@ -167,6 +174,7 @@ class IgViewModel @Inject constructor(
                                             .addOnSuccessListener {
                                                 this._userData.value = userData
                                                 _inProgress.value = false
+                                                updatePostData(username = username)
                                                 handleException(customMessage = "Profile updated! You're good to go.")
                                             }
                                             .addOnFailureListener {
@@ -221,7 +229,41 @@ class IgViewModel @Inject constructor(
             createOrUpdateProfile(
                 imageUrl = imageUrl.toString()
             )
+            updatePostData(imageUrl = imageUrl.toString())
         }
+    }
+
+    // function to update post data when the user changes something in their ID
+    private fun updatePostData(imageUrl: String? = null, username: String? = null) {
+        val userId = auth.currentUser?.uid
+
+        db.collection(POSTS).whereEqualTo("userId", userId).get()
+            .addOnSuccessListener {
+                val posts = mutableStateOf<List<PostData>>(arrayListOf())
+                convertToPost(it, posts)
+                val refs = arrayListOf<DocumentReference>()
+                for(post in posts.value) {
+                    post.postId?.let { id ->
+                        refs.add(db.collection(POSTS).document(id))
+                    }
+                }
+                if(refs.isNotEmpty()) {
+                    db.runBatch {   batch ->
+                        if(imageUrl != null) {
+                            for(ref in refs) {
+                                batch.update(ref, "userImage", imageUrl)
+                            }
+                        }
+                        if(username != null) {
+                            for(ref in refs) {
+                                batch.update(ref, "username", username)
+                            }
+                        }
+                    }.addOnSuccessListener {
+                        getUserPosts()
+                    }
+                }
+            }
     }
 
     // function to logout
@@ -240,6 +282,26 @@ class IgViewModel @Inject constructor(
         }
     }
 
+    // function to delete the user posts
+    fun onDeletePost(postId: String?, imageUrl: String?, onPostDeleteSuccess: () -> Unit) {
+        val storageRef = storage.reference
+        val fileRef = storageRef.child("images/$imageUrl")
+        _inProgress.value = true
+        postId?.let {   id ->
+            db.collection(POSTS).document(id).delete()
+                .addOnSuccessListener {
+                    fileRef.delete()
+                    getUserPosts()
+                    _inProgress.value = false
+                    onPostDeleteSuccess.invoke()
+                }
+                .addOnFailureListener {
+                    handleException(customMessage = "Oops! We couldn't delete your post.")
+                    _inProgress.value = false
+                }
+        }
+    }
+
     // function to create a post
     private fun onCreatePost(imageUrl: Uri, description: String, onPostSuccess: () -> Unit) {
         _inProgress.value = true
@@ -250,6 +312,12 @@ class IgViewModel @Inject constructor(
         if(currentUid != null) {
             val postUUID = UUID.randomUUID().toString()
 
+            val filterWords = listOf("is", "the", "a", "an", "to", "if", "be", "of", "and", "or", "in", "it")
+
+            val searchTerms = description.split(" ", ",", "!", ".", "?", "#")
+                .map { it.lowercase() }
+                .filter { it.isNotEmpty() && !filterWords.contains(it) }
+
             val post = PostData(
                 postId = postUUID,
                 userId = currentUid,
@@ -257,12 +325,13 @@ class IgViewModel @Inject constructor(
                 userImage = currentPfp,
                 postImage = imageUrl.toString(),
                 postDescription = description,
-                time = System.currentTimeMillis()
+                time = System.currentTimeMillis(),
+                likes = listOf(),
+                searchTerms = searchTerms
             )
 
             db.collection(POSTS).document(postUUID).set(post)
                 .addOnSuccessListener {
-                    _popupNotification.value = Event("Post created!")
                     _inProgress.value = false
                     getUserPosts()
                     onPostSuccess.invoke()
@@ -298,6 +367,22 @@ class IgViewModel @Inject constructor(
                 }
         } else {
             onLogout()
+        }
+    }
+
+    // function to search for posts
+    fun searchPosts(searchTerm: String) {
+        if (searchTerm.isNotEmpty()) {
+            _searchProgress.value = true
+            db.collection(POSTS).whereArrayContains("searchTerms", searchTerm.trim().lowercase()).get()
+                .addOnSuccessListener {
+                    convertToPost(it, _searchedPosts)
+                    _searchProgress.value = false
+                }
+                .addOnFailureListener {
+                    handleException(customMessage = "Cannot search posts.")
+                    _searchProgress.value = false
+                }
         }
     }
 
