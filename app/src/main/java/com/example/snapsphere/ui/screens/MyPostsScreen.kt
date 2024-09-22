@@ -115,7 +115,7 @@ fun MyPostsScreen(
                         )
                         BasicAccountInfo(
                             about = R.string.posts,
-                            value = 5,
+                            value = igViewModel.userPosts.value.size,
                             modifier = Modifier.align(Alignment.CenterVertically)
                         )
                         BasicAccountInfo(
@@ -125,7 +125,7 @@ fun MyPostsScreen(
                         )
                         BasicAccountInfo(
                             about = R.string.following,
-                            value = 5,
+                            value = igViewModel.userData.value?.following?.size ?: 0,
                             modifier = Modifier.align(Alignment.CenterVertically)
                         )
                     }

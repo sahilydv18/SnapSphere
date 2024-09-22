@@ -15,4 +15,5 @@ sealed class Screens(val route: String) {
         fun createRoute(uri: String) = "NewPostScreen/$uri"
     }
     data object SinglePostScreen: Screens("SinglePostScree")
+    data object UserScreen: Screens("UserScreen")
 }

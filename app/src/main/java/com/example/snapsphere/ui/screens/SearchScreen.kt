@@ -60,7 +60,8 @@ fun SearchScreen(
     igViewModel: IgViewModel,
     modifier: Modifier,
     navigateToScreen: (Screens) -> Unit,
-    onPostClick: (PostData) -> Unit
+    onPostClick: (PostData) -> Unit,
+    onUserProfileClick: (UserData) -> Unit
 ) {
     var searchTerm by rememberSaveable {
         mutableStateOf("")
@@ -163,8 +164,13 @@ fun SearchScreen(
                         SearchedUsers(
                             isUsersLoading = igViewModel.searchedUserProgress.value,
                             users = igViewModel.searchedUsers.value
-                        ) {
-
+                        ) { userData: UserData ->
+                            if (userData.userId == igViewModel.userData.value?.userId) {
+                                navigateToScreen(Screens.MyPostsScreen)
+                            } else {
+                                onUserProfileClick(userData)
+                                igViewModel.getSearchedUserPost(userData.userId!!)
+                            }
                         }
                     } else {
                         SearchedPosts(

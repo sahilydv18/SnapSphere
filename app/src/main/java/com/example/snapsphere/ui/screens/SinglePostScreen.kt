@@ -98,10 +98,14 @@ fun SinglePostScreen(
                     Spacer(modifier = Modifier.weight(1f))
                     if (igViewModel.userData.value?.userId != postData.userId) {
                         TextButton(
-                            onClick = { /*TODO*/ },
+                            onClick = {
+                                igViewModel.onFollowClick(postData.userId!!)
+                            },
                             modifier = Modifier.align(Alignment.CenterVertically)
                         ) {
-                            Text(text = stringResource(id = R.string.follow))
+                            Text(
+                                text = stringResource(id = if (igViewModel.userData.value?.following?.contains(postData.userId) == true) R.string.unfollow else R.string.follow)
+                            )
                         }
                     } else {
                         var menuExpanded by remember {

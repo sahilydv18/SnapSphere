@@ -15,12 +15,14 @@ import androidx.navigation.compose.rememberNavController
 import com.example.snapsphere.Screens
 import com.example.snapsphere.auth.LoginScreen
 import com.example.snapsphere.data.PostData
+import com.example.snapsphere.data.UserData
 import com.example.snapsphere.ui.screens.FeedScreen
 import com.example.snapsphere.ui.screens.MyPostsScreen
 import com.example.snapsphere.ui.screens.NewPostScreen
 import com.example.snapsphere.ui.screens.ProfileScreen
 import com.example.snapsphere.ui.screens.SearchScreen
 import com.example.snapsphere.ui.screens.SinglePostScreen
+import com.example.snapsphere.ui.screens.UserScreen
 import com.example.snapsphere.viewmodel.IgViewModel
 
 @Composable
@@ -81,6 +83,10 @@ fun SnapSphereApp(
                 onPostClick = {     post: PostData ->
                     navController.currentBackStackEntry?.savedStateHandle?.set("postData", post)
                     navController.navigate(Screens.SinglePostScreen.route)
+                },
+                onUserProfileClick = { user: UserData ->
+                    navController.currentBackStackEntry?.savedStateHandle?.set("userData", user)
+                    navController.navigate(Screens.UserScreen.route)
                 }
             )
         }
@@ -120,6 +126,22 @@ fun SnapSphereApp(
                 postData = postData,
                 onBack = {
                     navController.popBackStack()
+                }
+            )
+        }
+
+        // another user screen
+        composable(Screens.UserScreen.route) {
+            val userData = navController.previousBackStackEntry?.savedStateHandle?.get<UserData>("userData") ?: UserData()
+            UserScreen(
+                userData = userData,
+                onBack = {
+                    navController.popBackStack()
+                },
+                igViewModel = igViewModel,
+                onPostClick = {
+                    navController.currentBackStackEntry?.savedStateHandle?.set("postData", it)
+                    navController.navigate(Screens.SinglePostScreen.route)
                 }
             )
         }

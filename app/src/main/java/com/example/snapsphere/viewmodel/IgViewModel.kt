@@ -60,6 +60,12 @@ class IgViewModel @Inject constructor(
     private val _searchedUserProgress = mutableStateOf(false)
     val searchedUserProgress = _searchedUserProgress
 
+    private val _searchedUsersPost = mutableStateOf<List<PostData>>(listOf())
+    val searchedUsersPost = _searchedUsersPost
+
+    private val _searchedUserPostProgress = mutableStateOf(false)
+    val searchedUserPostProgress = _searchedUserPostProgress
+
     init {
         val currentUser = auth.currentUser
         _signedIn.value = currentUser != null
@@ -279,6 +285,26 @@ class IgViewModel @Inject constructor(
         handleException(customMessage = "You're logged out. Come back anytime!")
     }
 
+    // function to follow or unfollow a user
+    fun onFollowClick(userId: String) {
+        auth.currentUser?.uid?.let {    currentUser ->
+            val following = arrayListOf<String>()
+            _userData.value?.following?.let {
+                following.addAll(it)
+            }
+            if(following.contains(userId)) {
+                following.remove(userId)
+            } else {
+                following.add(userId)
+            }
+
+            db.collection(USERS).document(currentUser).update("following", following)
+                .addOnSuccessListener {
+                    getUserData(currentUser)
+                }
+        }
+    }
+
     // function to make new post
     fun onNewPost(uri: Uri, description: String, onPostSuccess: () -> Unit) {
         // first we are uploading the image to firebase storage and the retrieving its url
@@ -351,27 +377,48 @@ class IgViewModel @Inject constructor(
         }
     }
 
+    // function to get searched users post
+    fun getSearchedUserPost(userId: String) {
+        getUserPosts(userId = userId)
+    }
+
     // function to get user posts
-    private fun getUserPosts() {
-        val userUid = auth.currentUser?.uid
+    private fun getUserPosts(userId: String? = null) {
+        if (userId == null) {
+            val userUid = auth.currentUser?.uid
 
-        if(userUid != null) {
-            _refreshPostsProgress.value = true
+            if(userUid != null) {
+                _refreshPostsProgress.value = true
 
-            db.collection(POSTS).whereEqualTo("userId", userUid).get()      // getting only user specific posts
+                db.collection(POSTS).whereEqualTo("userId", userUid).get()      // getting only user specific posts
+                    .addOnSuccessListener {     documents ->
+                        convertToPost(
+                            documents = documents,
+                            outState = _userPosts
+                        )
+                        _refreshPostsProgress.value = false
+                    }
+                    .addOnFailureListener {
+                        handleException(it, "Oops! We couldn't load your posts right now.")
+                        _refreshPostsProgress.value = false
+                    }
+            } else {
+                onLogout()
+            }
+        } else {
+            _searchedUserPostProgress.value = true
+            db.collection(POSTS).whereEqualTo("userId", userId).get()      // getting only user specific posts
                 .addOnSuccessListener {     documents ->
                     convertToPost(
                         documents = documents,
-                        outState = _userPosts
+                        outState = _searchedUsersPost
                     )
-                    _refreshPostsProgress.value = false
+                    _searchedUserPostProgress.value = false
                 }
                 .addOnFailureListener {
                     handleException(it, "Oops! We couldn't load your posts right now.")
-                    _refreshPostsProgress.value = false
+                    _searchedUserPostProgress.value = false
                 }
-        } else {
-            onLogout()
         }
     }
 
