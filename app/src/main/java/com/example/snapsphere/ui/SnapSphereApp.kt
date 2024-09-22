@@ -72,11 +72,15 @@ fun SnapSphereApp(
             }
             SearchScreen(
                 igViewModel = igViewModel,
-                modifier = modifier,
                 navigateToScreen = { screen: Screens ->
                     navController.navigate(screen.route) {
                         popUpTo(0)
                     }
+                },
+                modifier = modifier,
+                onPostClick = {     post: PostData ->
+                    navController.currentBackStackEntry?.savedStateHandle?.set("postData", post)
+                    navController.navigate(Screens.SinglePostScreen.route)
                 }
             )
         }

@@ -33,4 +33,9 @@
     <string name="follow">Follow</string>
     <string name="likes">likes</string>
     <string name="delete">Delete</string>
+    <string name="search">Search</string>
+    <string name="no_posts_search">Oops! We couldn\'t find any posts.</string>
+    <string name="users">Users</string>
+    <string name="posts_search">Posts</string>
+    <string name="no_users">Oops! We couldn\'t find any users.</string>
 </resources>

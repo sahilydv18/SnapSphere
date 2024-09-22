@@ -51,11 +51,16 @@ class IgViewModel @Inject constructor(
     private val _searchedPosts = mutableStateOf<List<PostData>>(listOf())
     val searchedPosts = _searchedPosts
 
-    private val _searchProgress = mutableStateOf(false)
-    val searchProgress = _searchProgress
+    private val _searchedPostsProgress = mutableStateOf(false)
+    val searchedPostsProgress = _searchedPostsProgress
+
+    private val _searchedUsers = mutableStateOf<List<UserData>>(listOf())
+    val searchedUsers = _searchedUsers
+
+    private val _searchedUserProgress = mutableStateOf(false)
+    val searchedUserProgress = _searchedUserProgress
 
     init {
-        //auth.signOut()
         val currentUser = auth.currentUser
         _signedIn.value = currentUser != null
         currentUser?.uid?.let {
@@ -373,20 +378,49 @@ class IgViewModel @Inject constructor(
     // function to search for posts
     fun searchPosts(searchTerm: String) {
         if (searchTerm.isNotEmpty()) {
-            _searchProgress.value = true
+            _searchedPostsProgress.value = true
             db.collection(POSTS).whereArrayContains("searchTerms", searchTerm.trim().lowercase()).get()
                 .addOnSuccessListener {
                     convertToPost(it, _searchedPosts)
-                    _searchProgress.value = false
+                    _searchedPostsProgress.value = false
                 }
                 .addOnFailureListener {
                     handleException(customMessage = "Cannot search posts.")
-                    _searchProgress.value = false
+                    _searchedPostsProgress.value = false
                 }
         }
     }
 
-    // function for converting a post to an object and storing it in the state
+    // function to search users
+    fun searchUsers(searchTerm: String) {
+        if (searchTerm.isNotEmpty()) {
+            _searchedUserProgress.value = true
+            db.collection(USERS)
+                .whereGreaterThanOrEqualTo("username", searchTerm)
+                .whereLessThanOrEqualTo("username", "$searchTerm\uf8ff")
+                .get()
+                .addOnSuccessListener {
+                    convertToUser(it, _searchedUsers)
+                    _searchedUserProgress.value = false
+                }
+                .addOnFailureListener {
+                    handleException(customMessage = "Cannot search users.")
+                    _searchedPostsProgress.value = false
+                }
+        }
+    }
+
+    // function for converting the user data obtained from firebase to an user data object and storing it in the state
+    private fun convertToUser(documents: QuerySnapshot, outState: MutableState<List<UserData>>) {
+        val users = mutableListOf<UserData>()
+        documents.forEach {
+            val user = it.toObject<UserData>()
+            users.add(user)
+        }
+        outState.value = users
+    }
+
+    // function for converting the post data obtained from firebase to an post data object and storing it in the state
     private fun convertToPost(documents: QuerySnapshot, outState: MutableState<List<PostData>>) {
         val posts = mutableListOf<PostData>()
         documents.forEach {
