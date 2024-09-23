@@ -14,7 +14,9 @@ import androidx.navigation.compose.rememberNavController
 import com.example.snapsphere.Screens
 import com.example.snapsphere.auth.LoginScreen
 import com.example.snapsphere.auth.SignUpScreen
+import com.example.snapsphere.data.UserData
 import com.example.snapsphere.ui.screens.FeedScreen
+import com.example.snapsphere.ui.screens.UserScreen
 import com.example.snapsphere.viewmodel.IgViewModel
 
 @Composable
@@ -130,11 +132,30 @@ fun LoginAndSignupNav(
         composable(Screens.FeedScreen.route) {
             FeedScreen(
                 igViewModel = igViewModel,
-                modifier = modifier,
                 navigateToScreen = { screen: Screens ->
                     navController.navigate(screen.route) {
                         popUpTo(0)
                     }
+                },
+                navigateToUserProfile = {   userData: UserData ->
+                    navController.currentBackStackEntry?.savedStateHandle?.set("userData", userData)
+                    navController.navigate(Screens.UserScreen.route)
+                }
+            )
+        }
+
+        // another user screen
+        composable(Screens.UserScreen.route) {
+            val userData = navController.previousBackStackEntry?.savedStateHandle?.get<UserData>("userData") ?: UserData()
+            UserScreen(
+                userData = userData,
+                onBack = {
+                    navController.popBackStack()
+                },
+                igViewModel = igViewModel,
+                onPostClick = {
+                    navController.currentBackStackEntry?.savedStateHandle?.set("postData", it)
+                    navController.navigate(Screens.SinglePostScreen.route)
                 }
             )
         }

@@ -56,11 +56,14 @@ fun SnapSphereApp(
         composable(Screens.FeedScreen.route) {
             FeedScreen(
                 igViewModel = igViewModel,
-                modifier = modifier,
                 navigateToScreen = { screen: Screens ->
                     navController.navigate(screen.route) {
                         popUpTo(0)
                     }
+                },
+                navigateToUserProfile = {   userData: UserData ->
+                    navController.currentBackStackEntry?.savedStateHandle?.set("userData", userData)
+                    navController.navigate(Screens.UserScreen.route)
                 }
             )
         }

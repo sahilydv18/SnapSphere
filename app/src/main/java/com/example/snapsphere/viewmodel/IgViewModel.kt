@@ -35,9 +35,11 @@ class IgViewModel @Inject constructor(
     private val _inProgress = mutableStateOf(false)
     val inProgress = _inProgress
 
+    // state to store user data
     private val _userData = mutableStateOf<UserData?>(null)
     val userData = _userData
 
+    // state to make toast
     private val _popupNotification = mutableStateOf<Event<String>?>(null)
     val popupNotification = _popupNotification
 
@@ -45,26 +47,41 @@ class IgViewModel @Inject constructor(
     private val _refreshPostsProgress = mutableStateOf(false)
     val refreshPostsProgress = _refreshPostsProgress
 
+    // state to store user posts
     private val _userPosts = mutableStateOf<List<PostData>>(listOf())
     val userPosts = _userPosts
 
+    // state to store the post that match the search query
     private val _searchedPosts = mutableStateOf<List<PostData>>(listOf())
     val searchedPosts = _searchedPosts
 
+    // progress flag for fetching the searched posts
     private val _searchedPostsProgress = mutableStateOf(false)
     val searchedPostsProgress = _searchedPostsProgress
 
+    // state to store the users that matches the search query
     private val _searchedUsers = mutableStateOf<List<UserData>>(listOf())
     val searchedUsers = _searchedUsers
 
+    // progress flag for fetching the searched users
     private val _searchedUserProgress = mutableStateOf(false)
     val searchedUserProgress = _searchedUserProgress
 
+    // state for getting the posts of the user that we have searched and want's to see their profile
     private val _searchedUsersPost = mutableStateOf<List<PostData>>(listOf())
     val searchedUsersPost = _searchedUsersPost
 
+    // progress flag for fetching the post of the clicked search user
     private val _searchedUserPostProgress = mutableStateOf(false)
     val searchedUserPostProgress = _searchedUserPostProgress
+
+    // state for storing the post to show on the feed screen
+    private val _postFeed = mutableStateOf<List<PostData>>(listOf())
+    val postFeed = _postFeed
+
+    // progress flag for fetching the posts for feed screen
+    private val _postFeedProgress = mutableStateOf(false)
+    val postFeedProgress = _postFeedProgress
 
     init {
         val currentUser = auth.currentUser
@@ -457,6 +474,45 @@ class IgViewModel @Inject constructor(
         }
     }
 
+    // function to get posts for feed screen
+    private fun getFeedPost() {
+        val following = _userData.value?.following
+        if(!following.isNullOrEmpty()) {
+            _postFeedProgress.value = true
+            db.collection(POSTS).whereIn("userId", following).get()
+                .addOnSuccessListener {
+                    convertToPost(it, _postFeed)
+                    if(_postFeed.value.isNotEmpty()) {
+                        _postFeedProgress.value = false
+                    } else {
+                        getGeneralFeed()
+                    }
+                }
+                .addOnFailureListener {
+                    _postFeedProgress.value = false
+                    handleException(it, "Oops! There was a problem loading your feed.")
+                }
+        } else {
+            getGeneralFeed()
+        }
+    }
+
+    // function to get generic post for the user
+    private fun getGeneralFeed() {
+        _postFeedProgress.value = true
+        val currentTime = System.currentTimeMillis()
+        val difference = 24*60*60*1000
+        db.collection(POSTS).whereGreaterThanOrEqualTo("time", currentTime - difference).get()
+            .addOnSuccessListener {
+                convertToPost(it, _postFeed)
+                _postFeedProgress.value = false
+            }
+            .addOnFailureListener {
+                _postFeedProgress.value = false
+                handleException(it, "Oops! There was a problem loading your feed.")
+            }
+    }
+
     // function for converting the user data obtained from firebase to an user data object and storing it in the state
     private fun convertToUser(documents: QuerySnapshot, outState: MutableState<List<UserData>>) {
         val users = mutableListOf<UserData>()
@@ -487,6 +543,20 @@ class IgViewModel @Inject constructor(
                 _userData.value = userData
                 _inProgress.value = false
                 getUserPosts()
+                getFeedPost()
+            }
+            .addOnFailureListener {
+                handleException(it, "Cannot retrieve user data")
+                _inProgress.value = false
+            }
+    }
+
+    // function to get another user data
+    fun getAnotherUserData(userId: String, onUserDataFetched: (UserData) -> Unit) {
+        db.collection(USERS).document(userId).get()
+            .addOnSuccessListener {
+                val anotherUserData = it.toObject<UserData>()
+                onUserDataFetched(anotherUserData!!)
             }
             .addOnFailureListener {
                 handleException(it, "Cannot retrieve user data")
