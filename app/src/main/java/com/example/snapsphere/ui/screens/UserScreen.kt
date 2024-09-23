@@ -93,11 +93,15 @@ fun UserScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             // name and bio
-            Text(
-                text = userData.name ?: "",
-                fontWeight = FontWeight.Bold
-            )
-            Text(text = userData.bio ?: "")
+            userData.name?.let {
+                Text(
+                    text = it,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            userData.bio?.let {
+                Text(text = it)
+            }
 
             Spacer(modifier = Modifier.height(8.dp))
 

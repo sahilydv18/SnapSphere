@@ -83,6 +83,14 @@ class IgViewModel @Inject constructor(
     private val _postFeedProgress = mutableStateOf(false)
     val postFeedProgress = _postFeedProgress
 
+    // state for storing search screen feed posts
+    private val _searchFeed = mutableStateOf<List<PostData>>(listOf())
+    val searchFeed = _searchFeed
+
+    // flag for search screen feed fetching progress
+    private val _searchFeedProgress = mutableStateOf(false)
+    val searchFeedProgress = _searchFeedProgress
+
     init {
         val currentUser = auth.currentUser
         _signedIn.value = currentUser != null
@@ -505,10 +513,37 @@ class IgViewModel @Inject constructor(
         db.collection(POSTS).whereGreaterThanOrEqualTo("time", currentTime - difference).get()
             .addOnSuccessListener {
                 convertToPost(it, _postFeed)
-                _postFeedProgress.value = false
+                if(_postFeed.value.isEmpty()) {         // if no one has posted in last 24 hrs then we will get all available posts for the user
+                    db.collection(POSTS).get()
+                        .addOnSuccessListener {     docs ->
+                            convertToPost(docs, _postFeed)
+                            _postFeedProgress.value = false
+                        }
+                        .addOnFailureListener { exc ->
+                            _postFeedProgress.value = false
+                            handleException(exc, "Oops! There was a problem loading your feed." )
+                        }
+                } else {
+                    _postFeedProgress.value = false
+                }
             }
             .addOnFailureListener {
                 _postFeedProgress.value = false
+                handleException(it, "Oops! There was a problem loading your feed.")
+            }
+    }
+
+    // function to get search screen feed
+    private fun getSearchScreenFeed() {
+        val currentUid = auth.currentUser?.uid
+        _searchFeedProgress.value = true
+        db.collection(POSTS).whereNotEqualTo("userId", currentUid).get()
+            .addOnSuccessListener {
+                convertToPost(it, _searchFeed)
+                _searchFeedProgress.value = false
+            }
+            .addOnFailureListener {
+                _searchFeedProgress.value = false
                 handleException(it, "Oops! There was a problem loading your feed.")
             }
     }
@@ -544,6 +579,7 @@ class IgViewModel @Inject constructor(
                 _inProgress.value = false
                 getUserPosts()
                 getFeedPost()
+                getSearchScreenFeed()
             }
             .addOnFailureListener {
                 handleException(it, "Cannot retrieve user data")

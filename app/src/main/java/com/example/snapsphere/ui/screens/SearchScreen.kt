@@ -132,11 +132,11 @@ fun SearchScreen(
                 // displaying searched users and posts
                 if (showSearchText) {
                     Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                        modifier = Modifier.fillMaxSize()
                     ) {
-                        Text(text = "Search here...")
+                        UserPosts(isPostLoading = igViewModel.searchFeedProgress.value, posts = igViewModel.searchFeed.value) { postData: PostData ->
+                            onPostClick(postData)
+                        }
                     }
                 } else {
                     // tabs
