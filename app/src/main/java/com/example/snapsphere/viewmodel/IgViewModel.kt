@@ -619,4 +619,30 @@ class IgViewModel @Inject constructor(
             bio = bio
         )
     }
+
+    fun onPostLike(postData: PostData, onLike: (Boolean) -> Unit) {
+        auth.currentUser?.uid?.let {    userId ->
+            postData.likes?.let {   likes ->
+                val newLikes = arrayListOf<String>()
+                if (likes.contains(userId)) {
+                    newLikes.addAll(likes.filter { userId != it })
+                    onLike(false)
+                } else {
+                    newLikes.addAll(likes)
+                    newLikes.add(userId)
+                    onLike(true)
+                }
+
+                postData.postId?.let {  postId ->
+                    db.collection(POSTS).document(postId).update("likes", newLikes)
+                        .addOnSuccessListener {
+                            postData.likes = newLikes
+                        }
+                        .addOnFailureListener {
+                            handleException(customMessage = "Couldn't like post. Please try again.")
+                        }
+                }
+            }
+        }
+    }
 }

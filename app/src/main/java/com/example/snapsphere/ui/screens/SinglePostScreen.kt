@@ -147,13 +147,22 @@ fun SinglePostScreen(
                     var showLiked by remember {
                         mutableStateOf(postData.likes?.contains(igViewModel.userData.value?.userId) == true)
                     }
-                    val noOfLikes by remember {
+                    var noOfLikes by remember {
                         mutableIntStateOf(postData.likes?.size ?: 0)
                     }
 
                     IconButton(
                         onClick = {
                             showLiked = !showLiked
+                            igViewModel.onPostLike(postData) {  isLiked ->
+                                if (isLiked) {
+                                    noOfLikes++
+                                } else {
+                                    if (noOfLikes > 0) {
+                                        noOfLikes--
+                                    }
+                                }
+                            }
                         },
                         modifier = Modifier.padding(start = 0.dp)
                     ) {

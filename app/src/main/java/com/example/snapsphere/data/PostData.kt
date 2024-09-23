@@ -12,6 +12,6 @@ data class PostData(
     val postImage: String? = null,
     val postDescription: String? = null,
     val time: Long? = null,
-    val likes: List<String>? = null,
+    var likes: List<String>? = null,
     val searchTerms: List<String>? = null
 ): Parcelable

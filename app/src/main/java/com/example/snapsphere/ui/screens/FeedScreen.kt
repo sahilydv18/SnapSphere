@@ -1,7 +1,6 @@
 package com.example.snapsphere.ui.screens
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -70,7 +69,6 @@ fun FeedScreen(
                 title = {
                     Text(
                         text = stringResource(id = R.string.app_name),
-                        modifier = Modifier.padding(16.dp),
                         fontSize = MaterialTheme.typography.displaySmall.fontSize,
                         fontFamily = FontFamily.Cursive,
                         style = TextStyle(
@@ -96,9 +94,7 @@ fun FeedScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(innerPadding),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .padding(innerPadding)
             ) {
                 if (igViewModel.postFeedProgress.value) {
                     CommonProgressSpinner()
@@ -108,7 +104,8 @@ fun FeedScreen(
                             FeedPost(
                                 postData = it,
                                 igViewModel = igViewModel,
-                                navigateToUserProfile = navigateToUserProfile
+                                navigateToUserProfile = navigateToUserProfile,
+                                navigateToScreen = navigateToScreen
                             )
                         }
                     }
@@ -122,7 +119,8 @@ fun FeedScreen(
 fun FeedPost(
     postData: PostData,
     igViewModel: IgViewModel,
-    navigateToUserProfile: (UserData) -> Unit
+    navigateToUserProfile: (UserData) -> Unit,
+    navigateToScreen: (Screens) -> Unit
 ) {
     Column(
         modifier = Modifier.padding(vertical = 8.dp)
@@ -133,8 +131,12 @@ fun FeedPost(
                 .padding(bottom = 8.dp, start = 8.dp)
                 .clickable {
                     igViewModel.getAnotherUserData(postData.userId!!) { userData: UserData ->
-                        navigateToUserProfile(userData)
-                        igViewModel.getSearchedUserPost(userId = postData.userId)
+                        if (userData.userId != igViewModel.userData.value?.userId) {
+                            navigateToUserProfile(userData)
+                            igViewModel.getSearchedUserPost(userId = postData.userId)
+                        } else {
+                            navigateToScreen(Screens.MyPostsScreen)
+                        }
                     }
                 }
         ) {
@@ -154,18 +156,27 @@ fun FeedPost(
 
         // like and comment button
         Column {
-            val noOfLikes by remember {
+            var noOfLikes by remember {
                 mutableIntStateOf(postData.likes?.size ?: 0)
             }
 
-            Row {
-                var showLiked by remember {
-                    mutableStateOf(postData.likes?.contains(igViewModel.userData.value?.userId) == true)
-                }
+            var showLiked by remember {
+                mutableStateOf(postData.likes?.contains(igViewModel.userData.value?.userId) == true)
+            }
 
+            Row {
                 IconButton(
                     onClick = {
                         showLiked = !showLiked
+                        igViewModel.onPostLike(postData) {  isLiked ->
+                            if (isLiked) {
+                                noOfLikes++
+                            } else {
+                                if (noOfLikes > 0) {
+                                    noOfLikes--
+                                }
+                            }
+                        }
                     },
                     modifier = Modifier.padding(start = 0.dp)
                 ) {
