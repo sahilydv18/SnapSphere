@@ -54,7 +54,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.snapsphere.R
+import com.example.snapsphere.Screens
 import com.example.snapsphere.data.PostData
+import com.example.snapsphere.data.UserData
 import com.example.snapsphere.utils.CommonImage
 import com.example.snapsphere.utils.CommonProgressSpinner
 import com.example.snapsphere.utils.UserImage
@@ -65,7 +67,9 @@ import com.example.snapsphere.viewmodel.IgViewModel
 fun SinglePostScreen(
     igViewModel: IgViewModel,
     postData: PostData,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    navigateToUserProfile: (UserData, Int) -> Unit,
+    navigateToScreen: (Screens) -> Unit
 ) {
     // whenever on the single post screen we will get comments at the start
     postData.postId?.let {
@@ -187,7 +191,18 @@ fun SinglePostScreen(
                     Row(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Row {
+                        Row(
+                            modifier = Modifier.clickable {
+                                igViewModel.getAnotherUserData(postData.userId!!) { userData: UserData, followers: Int ->
+                                    if (userData.userId != igViewModel.userData.value?.userId) {
+                                        navigateToUserProfile(userData, followers)
+                                        igViewModel.getSearchedUserPost(userId = postData.userId)
+                                    } else {
+                                        navigateToScreen(Screens.MyPostsScreen)
+                                    }
+                                }
+                            }
+                        ) {
                             UserImage(
                                 image = postData.userImage,
                                 modifier = Modifier.size(40.dp)

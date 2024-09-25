@@ -130,6 +130,16 @@ fun SnapSphereApp(
                 postData = postData,
                 onBack = {
                     navController.popBackStack()
+                },
+                navigateToUserProfile = {   userData: UserData, followers: Int ->
+                    navController.currentBackStackEntry?.savedStateHandle?.set("userData", userData)
+                    navController.currentBackStackEntry?.savedStateHandle?.set("followers", followers)
+                    navController.navigate(Screens.UserScreen.route)
+                },
+                navigateToScreen = { screen: Screens ->
+                    navController.navigate(screen.route) {
+                        popUpTo(0)
+                    }
                 }
             )
         }
