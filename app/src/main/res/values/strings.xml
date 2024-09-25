@@ -39,4 +39,7 @@
     <string name="posts_search">Posts</string>
     <string name="no_users">Oops! We couldn\'t find any users.</string>
     <string name="unfollow">Unfollow</string>
+    <string name="add_comment">Add a comment</string>
+    <string name="no_comment">No comments yet.</string>
+    <string name="comments">comments</string>
 </resources>

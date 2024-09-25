@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.example.snapsphere.data.CommentData
 import com.example.snapsphere.data.Event
 import com.example.snapsphere.data.PostData
 import com.example.snapsphere.data.UserData
@@ -19,6 +20,7 @@ import javax.inject.Inject
 
 private const val USERS = "users"
 private const val POSTS = "posts"
+private const val COMMENTS = "comments"
 
 @HiltViewModel
 class IgViewModel @Inject constructor(
@@ -90,6 +92,14 @@ class IgViewModel @Inject constructor(
     // flag for search screen feed fetching progress
     private val _searchFeedProgress = mutableStateOf(false)
     val searchFeedProgress = _searchFeedProgress
+
+    // state for storing comments
+    private val _commentsForPost = mutableStateOf<List<CommentData>>(listOf())
+    val commentForPost = _commentsForPost
+
+    // flag for retrieving comments
+    private val _commentsProgress = mutableStateOf(false)
+    val commentsProgress = _commentsProgress
 
     init {
         val currentUser = auth.currentUser
@@ -620,6 +630,7 @@ class IgViewModel @Inject constructor(
         )
     }
 
+    // function to like or dislike a post
     fun onPostLike(postData: PostData, onLike: (Boolean) -> Unit) {
         auth.currentUser?.uid?.let {    userId ->
             postData.likes?.let {   likes ->
@@ -644,5 +655,59 @@ class IgViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    // function to add comment
+    fun createComment(postId: String, text: String) {
+        _userData.value?.userId?.let {      userId ->
+            val commentId = UUID.randomUUID().toString()
+            val comment = CommentData(
+                commentId = commentId,
+                postId = postId,
+                userId = userId,
+                text = text,
+                timestamp = System.currentTimeMillis()
+            )
+
+            db.collection(COMMENTS).document(commentId).set(comment)
+                .addOnSuccessListener {
+                    // get existing comments
+                    getComments(postId)
+                }
+                .addOnFailureListener {
+                    handleException(it, "Unable to comment")
+                }
+        }
+    }
+
+    // function to get comments
+    fun getComments(postId: String) {
+        _commentsProgress.value = true
+        db.collection(COMMENTS).whereEqualTo("postId", postId).get()
+            .addOnSuccessListener { documents ->
+                val comments = mutableListOf<CommentData>()
+                documents.forEach {
+                    val comment = it.toObject<CommentData>()
+                    comments.add(comment)
+                }
+                comments.sortByDescending { it.timestamp }
+                _commentsForPost.value = comments
+                _commentsProgress.value = false
+            }
+            .addOnFailureListener {
+                _commentsProgress.value = false
+                handleException(it, "Cannot reterive comments")
+            }
+    }
+
+    // function to delete a comment
+    fun deleteComment(commentId: String, postId: String) {
+        db.collection(COMMENTS).document(commentId).delete()
+            .addOnSuccessListener {
+                getComments(postId)
+            }
+            .addOnFailureListener {
+                handleException(it, "Cannot delete comment")
+            }
     }
 }

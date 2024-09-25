@@ -150,7 +150,9 @@ fun UserImage(
     } else {
         CommonImage(
             image = image,
-            modifier = modifier.size(80.dp).clip(CircleShape)
+            modifier = modifier
+                .size(80.dp)
+                .clip(CircleShape)
         )
     }
 }
@@ -161,12 +163,12 @@ fun CommonProgressSpinner() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Gray),
+            .background(MaterialTheme.colorScheme.surface),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         CircularProgressIndicator(
-            color = MaterialTheme.colorScheme.onPrimary
+            color = MaterialTheme.colorScheme.onSurface
         )
     }
 }
