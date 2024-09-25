@@ -120,7 +120,7 @@ fun MyPostsScreen(
                         )
                         BasicAccountInfo(
                             about = R.string.followers,
-                            value = 5,
+                            value = igViewModel.followers.value,
                             modifier = Modifier.align(Alignment.CenterVertically)
                         )
                         BasicAccountInfo(

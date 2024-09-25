@@ -19,6 +19,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -37,8 +41,14 @@ fun UserScreen(
     igViewModel: IgViewModel,
     userData: UserData,
     onBack: () -> Unit,
-    onPostClick: (PostData) -> Unit
+    onPostClick: (PostData) -> Unit,
+    followers: Int
 ) {
+
+    var followersValue by rememberSaveable {
+        mutableIntStateOf(followers)
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -80,7 +90,7 @@ fun UserScreen(
                 )
                 BasicAccountInfo(
                     about = R.string.followers,
-                    value = 5,
+                    value = followersValue,
                     modifier = Modifier.align(Alignment.CenterVertically)
                 )
                 BasicAccountInfo(
@@ -109,6 +119,9 @@ fun UserScreen(
             OutlinedButton(
                 onClick = {
                     igViewModel.onFollowClick(userData.userId!!)
+                    igViewModel.getAnotherUserData(userId = userData.userId!!) { _ , followers: Int ->
+                        followersValue = followers
+                    }
                 },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(10)

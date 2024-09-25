@@ -101,6 +101,10 @@ class IgViewModel @Inject constructor(
     private val _commentsProgress = mutableStateOf(false)
     val commentsProgress = _commentsProgress
 
+    // state for storing followers
+    private val _followers = mutableStateOf(0)
+    val followers = _followers
+
     init {
         val currentUser = auth.currentUser
         _signedIn.value = currentUser != null
@@ -590,6 +594,9 @@ class IgViewModel @Inject constructor(
                 getUserPosts()
                 getFeedPost()
                 getSearchScreenFeed()
+                getFollowers(userId) {
+                    _followers.value = it
+                }
             }
             .addOnFailureListener {
                 handleException(it, "Cannot retrieve user data")
@@ -598,11 +605,13 @@ class IgViewModel @Inject constructor(
     }
 
     // function to get another user data
-    fun getAnotherUserData(userId: String, onUserDataFetched: (UserData) -> Unit) {
+    fun getAnotherUserData(userId: String, onUserDataFetched: (UserData, Int) -> Unit) {
         db.collection(USERS).document(userId).get()
             .addOnSuccessListener {
                 val anotherUserData = it.toObject<UserData>()
-                onUserDataFetched(anotherUserData!!)
+                getFollowers(userId) {  followers ->
+                    onUserDataFetched(anotherUserData!!, followers)
+                }
             }
             .addOnFailureListener {
                 handleException(it, "Cannot retrieve user data")
@@ -708,6 +717,14 @@ class IgViewModel @Inject constructor(
             }
             .addOnFailureListener {
                 handleException(it, "Cannot delete comment")
+            }
+    }
+
+    // function to get followers
+    private fun getFollowers(uid: String, onSuccess: (Int) -> Unit) {
+        db.collection(USERS).whereArrayContains("following", uid).get()
+            .addOnSuccessListener {
+                onSuccess(it.size())
             }
     }
 }

@@ -61,8 +61,9 @@ fun SnapSphereApp(
                         popUpTo(0)
                     }
                 },
-                navigateToUserProfile = {   userData: UserData ->
+                navigateToUserProfile = {   userData: UserData, followers: Int ->
                     navController.currentBackStackEntry?.savedStateHandle?.set("userData", userData)
+                    navController.currentBackStackEntry?.savedStateHandle?.set("followers", followers)
                     navController.navigate(Screens.UserScreen.route)
                 }
             )
@@ -136,6 +137,7 @@ fun SnapSphereApp(
         // another user screen
         composable(Screens.UserScreen.route) {
             val userData = navController.previousBackStackEntry?.savedStateHandle?.get<UserData>("userData") ?: UserData()
+            val followers = navController.previousBackStackEntry?.savedStateHandle?.get<Int>("followers") ?: 0
             UserScreen(
                 userData = userData,
                 onBack = {
@@ -145,7 +147,8 @@ fun SnapSphereApp(
                 onPostClick = {
                     navController.currentBackStackEntry?.savedStateHandle?.set("postData", it)
                     navController.navigate(Screens.SinglePostScreen.route)
-                }
+                },
+                followers = followers
             )
         }
 

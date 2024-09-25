@@ -68,7 +68,7 @@ import com.example.snapsphere.viewmodel.IgViewModel
 fun FeedScreen(
     igViewModel: IgViewModel,
     navigateToScreen: (Screens) -> Unit,
-    navigateToUserProfile: (UserData) -> Unit
+    navigateToUserProfile: (UserData, Int) -> Unit
 ) {
     Scaffold(
         bottomBar = {
@@ -135,7 +135,7 @@ fun FeedScreen(
 fun FeedPost(
     postData: PostData,
     igViewModel: IgViewModel,
-    navigateToUserProfile: (UserData) -> Unit,
+    navigateToUserProfile: (UserData, Int) -> Unit,
     navigateToScreen: (Screens) -> Unit
 ) {
     var commentText by rememberSaveable {
@@ -232,9 +232,9 @@ fun FeedPost(
                 modifier = Modifier
                     .padding(bottom = 8.dp, start = 8.dp)
                     .clickable {
-                        igViewModel.getAnotherUserData(postData.userId!!) { userData: UserData ->
+                        igViewModel.getAnotherUserData(postData.userId!!) { userData: UserData, followers: Int ->
                             if (userData.userId != igViewModel.userData.value?.userId) {
-                                navigateToUserProfile(userData)
+                                navigateToUserProfile(userData, followers)
                                 igViewModel.getSearchedUserPost(userId = postData.userId)
                             } else {
                                 navigateToScreen(Screens.MyPostsScreen)
@@ -335,7 +335,7 @@ fun CommentDisplay(commentData: CommentData, igViewModel: IgViewModel) {
         mutableStateOf<UserData?>(null)
     }
     commentData.userId?.let {
-        igViewModel.getAnotherUserData(it) { data ->
+        igViewModel.getAnotherUserData(it) { data, _ ->
             userData = data
         }
     }
