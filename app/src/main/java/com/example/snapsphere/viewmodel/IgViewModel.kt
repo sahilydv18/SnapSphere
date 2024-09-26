@@ -2,6 +2,7 @@ package com.example.snapsphere.viewmodel
 
 import android.net.Uri
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.example.snapsphere.data.CommentData
@@ -102,7 +103,7 @@ class IgViewModel @Inject constructor(
     val commentsProgress = _commentsProgress
 
     // state for storing followers
-    private val _followers = mutableStateOf(0)
+    private val _followers = mutableIntStateOf(0)
     val followers = _followers
 
     init {
@@ -594,8 +595,8 @@ class IgViewModel @Inject constructor(
                 getUserPosts()
                 getFeedPost()
                 getSearchScreenFeed()
-                getFollowers(userId) {
-                    _followers.value = it
+                getFollowers(userId) {  followers ->
+                    _followers.intValue = followers
                 }
             }
             .addOnFailureListener {
