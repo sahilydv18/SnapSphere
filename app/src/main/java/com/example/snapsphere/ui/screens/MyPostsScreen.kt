@@ -133,7 +133,7 @@ fun MyPostsScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     // name and bio
-                    if (igViewModel.userData.value?.name != null) {
+                    if (!igViewModel.userData.value?.name.isNullOrBlank()) {
                         Text(
                             text = "${igViewModel.userData.value?.name}",
                             fontWeight = FontWeight.Bold
@@ -148,7 +148,7 @@ fun MyPostsScreen(
                             fontWeight = FontWeight.Bold
                         )
                     }
-                    if (igViewModel.userData.value?.bio != null) {
+                    if (!igViewModel.userData.value?.bio.isNullOrBlank()) {
                         Text(text = "${igViewModel.userData.value?.bio}")
                     } else {
                         Text(
