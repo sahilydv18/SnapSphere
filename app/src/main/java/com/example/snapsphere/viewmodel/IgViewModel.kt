@@ -641,17 +641,17 @@ class IgViewModel @Inject constructor(
     }
 
     // function to like or dislike a post
-    fun onPostLike(postData: PostData, onLike: (Boolean) -> Unit) {
+    fun onPostLike(postData: PostData, onClick: () -> Unit) {
         auth.currentUser?.uid?.let {    userId ->
             postData.likes?.let {   likes ->
                 val newLikes = arrayListOf<String>()
                 if (likes.contains(userId)) {
                     newLikes.addAll(likes.filter { userId != it })
-                    onLike(false)
+                    onClick()
                 } else {
                     newLikes.addAll(likes)
                     newLikes.add(userId)
-                    onLike(true)
+                    onClick()
                 }
 
                 postData.postId?.let {  postId ->

@@ -283,8 +283,8 @@ fun SinglePostScreen(
                         IconButton(
                             onClick = {
                                 showLiked = !showLiked
-                                igViewModel.onPostLike(postData) { isLiked ->
-                                    if (isLiked) {
+                                igViewModel.onPostLike(postData) {
+                                    if (showLiked) {
                                         noOfLikes++
                                     } else {
                                         if (noOfLikes > 0) {
