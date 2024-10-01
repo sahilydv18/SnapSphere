@@ -28,7 +28,7 @@ Snap Sphere is a fully functional Instagram clone built using Firebase for backe
 
 1. Clone the repository:
    ```
-   git clone https://github.com/sahilydv18/snap-sphere.git
+   git clone https://github.com/sahilydv18/SnapSphere.git
    ```
 2. Open the project in **Android Studio**.
 3. Add Firebase configuration:
