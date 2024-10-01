@@ -24,13 +24,22 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,7 +64,8 @@ fun MyPostsScreen(
     navigateToScreen: (Screens) -> Unit,
     goToProfileScreen: () -> Unit,
     navigateToNewPostScreen: (String) -> Unit,
-    onPostClick: (PostData) -> Unit
+    onPostClick: (PostData) -> Unit,
+    goToAboutScreen: () -> Unit
 ) {
 
     // launcher for selecting image when the user clicks on the pfp on the MyPostsScreen
@@ -67,6 +77,11 @@ fun MyPostsScreen(
                 navigateToNewPostScreen(route)
             }
         }
+
+    // state for menu bar
+    var isExpanded by rememberSaveable {
+        mutableStateOf(false)
+    }
 
     if (igViewModel.inProgress.value) {
         CommonProgressSpinner()
@@ -83,11 +98,35 @@ fun MyPostsScreen(
             topBar = {
                 TopAppBar(
                     title = {
-                        Text(
-                            text = "@${igViewModel.userData.value?.username ?: ""}",
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center
-                        )
+                        Row {
+                            Text(
+                                text = "@${igViewModel.userData.value?.username ?: ""}",
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.weight(1f))
+                            Box {
+                                IconButton(onClick = { isExpanded = true }) {
+                                    Icon(
+                                        imageVector = Icons.Default.MoreVert,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                                DropdownMenu(
+                                    expanded = isExpanded,
+                                    onDismissRequest = { isExpanded = false }
+                                ) {
+                                    DropdownMenuItem(
+                                        text = { Text(text = stringResource(id = R.string.about)) },
+                                        onClick = {
+                                            goToAboutScreen()
+                                            isExpanded = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
                     }
                 )
             }
@@ -120,7 +159,7 @@ fun MyPostsScreen(
                         )
                         BasicAccountInfo(
                             about = R.string.followers,
-                            value = igViewModel.followers.value,
+                            value = igViewModel.followers.intValue,
                             modifier = Modifier.align(Alignment.CenterVertically)
                         )
                         BasicAccountInfo(

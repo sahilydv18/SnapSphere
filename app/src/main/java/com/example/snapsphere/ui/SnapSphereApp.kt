@@ -16,6 +16,7 @@ import com.example.snapsphere.Screens
 import com.example.snapsphere.auth.LoginScreen
 import com.example.snapsphere.data.PostData
 import com.example.snapsphere.data.UserData
+import com.example.snapsphere.ui.screens.AboutScreen
 import com.example.snapsphere.ui.screens.FeedScreen
 import com.example.snapsphere.ui.screens.MyPostsScreen
 import com.example.snapsphere.ui.screens.NewPostScreen
@@ -118,6 +119,9 @@ fun SnapSphereApp(
                 onPostClick = { post: PostData ->
                     navController.currentBackStackEntry?.savedStateHandle?.set("postData", post)
                     navController.navigate(Screens.SinglePostScreen.route)
+                },
+                goToAboutScreen = {
+                    navController.navigate(Screens.AboutScreen.route)
                 }
             )
         }
@@ -189,6 +193,15 @@ fun SnapSphereApp(
                     }
                 )
             }
+        }
+
+        // about screen
+        composable(Screens.AboutScreen.route) {
+            AboutScreen(
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
         }
 
         // login screen (added this just to handle the logout functionality)

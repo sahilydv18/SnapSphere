@@ -42,4 +42,7 @@
     <string name="add_comment">Add a comment</string>
     <string name="no_comment">No comments yet.</string>
     <string name="comments">comments</string>
+    <string name="about">About</string>
+    <string name="version">"Version "</string>
+    <string name="made_by_text">Made with ❤️ by Sahil</string>
 </resources>
